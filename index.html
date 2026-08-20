@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Material Fee Collection Portal</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body { 
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
+            background-color: #f5f5f7;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .apple-card {
+            background: rgba(255, 255, 255, 0.92);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            border: 1px solid rgba(229, 229, 234, 0.8);
+            box-shadow: 0 10px 30px 0 rgba(0, 0, 0, 0.03);
+        }
+        .apple-header {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(229, 229, 234, 0.6);
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in { animation: fadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+    </style>
+</head>
+<body class="text-slate-900 min-h-screen flex flex-col justify-between selection:bg-indigo-500 selection:text-white">
+
+    <!-- APP CONTAINER -->
+    <div class="max-w-md w-full mx-auto p-4 sm:p-5 flex-grow flex flex-col justify-between space-y-4">
+
+        <!-- HEADER -->
+        <header class="apple-header rounded-3xl p-3.5 shadow-sm flex items-center justify-between">
+            <div class="flex items-center space-x-2.5">
+                <div class="w-9 h-9 bg-slate-100 text-slate-800 rounded-2xl flex items-center justify-center text-xs border border-slate-200 shadow-inner">
+                    <i class="fa-solid fa-wallet"></i>
+                </div>
+                <div>
+                    <h1 class="text-xs font-black tracking-tight text-slate-900 uppercase">Fee Collection</h1>
+                    <p class="text-[9px] text-slate-400 font-medium">Material Fee Portal</p>
+                </div>
+            </div>
+            <div class="bg-indigo-50 text-indigo-700 border border-indigo-100 px-2.5 py-1 rounded-full text-[9px] font-bold flex items-center gap-1.5">
+                <span class="w-2 h-2 rounded-full bg-indigo-500 animate-pulse"></span> Live Sync
+            </div>
+        </header>
+
+        <!-- SCREEN 1: FEE COLLECTION FORM -->
+        <div id="screenForm" class="apple-card rounded-3xl p-5 sm:p-6 space-y-4 my-auto animate-fade-in">
+            <div class="space-y-1 text-center mb-2">
+                <h2 class="text-sm font-black tracking-tight text-slate-900">Collect Material Fee</h2>
+                <p class="text-[11px] text-slate-400">Select student and payment configuration.</p>
+            </div>
+
+            <form id="feeForm" onsubmit="handleProceed(event)" class="space-y-3.5">
+                
+                <!-- Student Name Dropdown -->
+                <div class="space-y-1">
+                    <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider">Student Name <span class="text-rose-500">*</span></label>
+                    <div class="relative">
+                        <select id="studentSelect" required onchange="updateStudentFee()" class="w-full px-4 py-3 bg-slate-50/80 border border-slate-200 rounded-2xl text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-900 focus:bg-white transition-all appearance-none">
+                            <option value="" disabled selected>Loading students (A-Z)...</option>
+                        </select>
+                        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-slate-500">
+                            <i class="fa-solid fa-chevron-down text-[10px]"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Material Fee Display Box -->
+                <div id="feeDisplayBox" class="hidden space-y-1 bg-slate-50 border border-slate-200/80 p-3.5 rounded-2xl animate-fade-in">
+                    <div class="flex items-center justify-between">
+                        <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Material Fee Amount:</span>
+                        <span class="text-[10px] bg-emerald-100 text-emerald-800 font-bold px-2 py-0.5 rounded-full">Due</span>
+                    </div>
+                    <p id="feeAmountText" class="text-sm font-black text-slate-900 mt-0.5">₹0</p>
+                </div>
+
+                <!-- Mode of Payment -->
+                <div class="space-y-1">
+                    <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider">Mode of Payment <span class="text-rose-500">*</span></label>
+                    <div class="grid grid-cols-2 gap-2">
+                        <label class="cursor-pointer">
+                            <input type="radio" name="paymentMode" value="Cash" required onclick="togglePaymentMode('Cash')" class="peer sr-only">
+                            <div class="py-2.5 text-center text-xs font-bold bg-slate-50 border border-slate-200 rounded-2xl peer-checked:bg-slate-900 peer-checked:text-white peer-checked:border-slate-900 transition-all shadow-sm">
+                                <i class="fa-solid fa-money-bill-wave mr-1"></i> Cash
+                            </div>
+                        </label>
+                        <label class="cursor-pointer">
+                            <input type="radio" name="paymentMode" value="UPI" onclick="togglePaymentMode('UPI')" class="peer sr-only">
+                            <div class="py-2.5 text-center text-xs font-bold bg-slate-50 border border-slate-200 rounded-2xl peer-checked:bg-slate-900 peer-checked:text-white peer-checked:border-slate-900 transition-all shadow-sm">
+                                <i class="fa-solid fa-qrcode mr-1"></i> UPI
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- UPI QR Code Section (Hidden by default) -->
+                <div id="upiSection" class="hidden space-y-3 bg-indigo-50/50 border border-indigo-100 p-4 rounded-2xl animate-fade-in text-center">
+                    <div class="space-y-0.5">
+                        <p class="text-[10px] font-bold text-indigo-900 uppercase tracking-wider">Scan & Pay via UPI</p>
+                        <p class="text-[11px] font-mono font-semibold text-indigo-700">sdarpan128@oksbi</p>
+                    </div>
+                    <div class="bg-white p-3 rounded-2xl inline-block border border-indigo-100 shadow-sm">
+                        <img id="upiQrImg" src="" alt="UPI QR Code" class="w-36 h-36 mx-auto rounded-lg">
+                    </div>
+                    <div class="bg-amber-50 border border-amber-200/60 p-2.5 rounded-xl text-left">
+                        <p class="text-[10px] font-semibold text-amber-900"><i class="fa-solid fa-circle-info text-amber-600 mr-1"></i> Add Remarks during scan:</p>
+                        <p id="upiRemarksText" class="text-[11px] font-black text-slate-900 mt-0.5 font-mono">-</p>
+                    </div>
+                </div>
+
+                <!-- Submit Button -->
+                <button type="submit" id="submitBtn" class="w-full mt-2 bg-slate-900 hover:bg-black text-white font-bold py-3.5 px-6 rounded-2xl text-xs transition-all shadow-md shadow-slate-900/10 active:scale-[0.98] flex items-center justify-center gap-2">
+                    Proceed to Confirmation <i class="fa-solid fa-arrow-right text-[10px]"></i>
+                </button>
+            </form>
+        </div>
+
+        <!-- SCREEN 2: CONFIRMATION PAGE -->
+        <div id="screenConfirm" class="hidden apple-card rounded-3xl p-6 space-y-4 my-auto animate-fade-in">
+            <div class="space-y-1 text-center">
+                <div class="w-12 h-12 bg-amber-50 text-amber-600 rounded-2xl flex items-center justify-center text-xl mx-auto border border-amber-100 shadow-inner mb-2">
+                    <i class="fa-solid fa-file-invoice"></i>
+                </div>
+                <h2 class="text-sm font-black text-slate-900">Confirm Payment Details</h2>
+                <p class="text-[11px] text-slate-400">Please verify transaction parameters before final submit.</p>
+            </div>
+            
+            <div class="bg-slate-50 p-3.5 rounded-2xl border border-slate-200/60 text-left space-y-2 text-xs">
+                <div class="flex justify-between"><span class="text-slate-400">Student Name:</span><span class="font-bold text-slate-800" id="confName">-</span></div>
+                <div class="flex justify-between"><span class="text-slate-400">Material Fee:</span><span class="font-bold text-indigo-700" id="confFee">-</span></div>
+                <div class="flex justify-between"><span class="text-slate-400">Payment Mode:</span><span class="font-bold text-slate-800" id="confMode">-</span></div>
+            </div>
+
+            <div class="flex gap-2">
+                <button onclick="backToForm()" class="w-1/3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-3.5 px-4 rounded-2xl text-xs transition-all active:scale-[0.98]">
+                    Back
+                </button>
+                <button onclick="submitFinalPayment()" class="w-2/3 bg-slate-900 hover:bg-black text-white font-bold py-3.5 px-6 rounded-2xl text-xs transition-all shadow-md active:scale-[0.98]">
+                    Confirm & Save to Sheet2
+                </button>
+            </div>
+        </div>
+
+        <!-- SCREEN 3: LOADING SPINNER SCREEN -->
+        <div id="screenLoader" class="hidden apple-card rounded-3xl p-8 flex flex-col items-center justify-center space-y-4 my-auto">
+            <div class="animate-spin rounded-full h-10 w-10 border-2 border-slate-200 border-t-slate-900"></div>
+            <p class="text-slate-500 text-xs font-semibold tracking-wide animate-pulse">Processing & Saving to Sheet2...</p>
+        </div>
+
+        <!-- SCREEN 4: SUCCESS CONFIRMATION SCREEN -->
+        <div id="screenSuccess" class="hidden apple-card rounded-3xl p-6 text-center space-y-4 my-auto animate-fade-in">
+            <div class="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center text-xl mx-auto border border-emerald-100 shadow-inner">
+                <i class="fa-solid fa-circle-check"></i>
+            </div>
+            <div class="space-y-1">
+                <h2 class="text-sm font-black text-slate-900">Payment Recorded Successfully!</h2>
+                <p class="text-[11px] text-slate-400">Data has been successfully pushed to Sheet2.</p>
+            </div>
+            
+            <button onclick="resetPortal()" class="w-full bg-slate-900 hover:bg-black text-white font-bold py-3.5 px-6 rounded-2xl text-xs transition-all shadow-md active:scale-[0.98]">
+                Collect Another Fee
+            </button>
+        </div>
+
+        <!-- FOOTER -->
+        <footer class="apple-header rounded-2xl py-2.5 px-4 text-center text-[10px] text-slate-400 shadow-sm">
+            Made by Darpan Sukla
+        </footer>
+
+    </div>
+
+    <!-- SCRIPT LOGIC -->
+    <script>
+        const APPS_SCRIPT_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbySxAcdlDZ_ZMv8T9ADpSmyhXddvDKHwdB9j8s5_1f-UIxRkCl2s8wbiSCcripXIVjrDg/exec";
+
+        let studentsData = [];
+
+        window.addEventListener('DOMContentLoaded', async () => {
+            await fetchSheetData();
+        });
+
+        async function fetchSheetData() {
+            try {
+                let response = await fetch(APPS_SCRIPT_WEB_APP_URL + "?action=getStudents");
+                let result = await response.json();
+                studentsData = result.students || [];
+            } catch (err) {
+                console.error("Error fetching students:", err);
+                studentsData = [];
+            }
+
+            // Sort students A to Z alphabetically by name
+            studentsData.sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'accent', numeric: true }));
+
+            let select = document.getElementById('studentSelect');
+            select.innerHTML = '<option value="" disabled selected>Select Student Name</option>';
+            
+            studentsData.forEach(item => {
+                let opt = document.createElement('option');
+                opt.value = item.name;
+                opt.textContent = item.name;
+                opt.dataset.fee = item.fee || "0";
+                select.appendChild(opt);
+            });
+        }
+
+        function updateStudentFee() {
+            let select = document.getElementById('studentSelect');
+            let selectedOpt = select.options[select.selectedIndex];
+            let fee = selectedOpt.dataset.fee || "0";
+
+            document.getElementById('feeAmountText').innerText = "₹" + fee;
+            document.getElementById('feeDisplayBox').classList.remove('hidden');
+            updateUpiDetails();
+        }
+
+        function togglePaymentMode(mode) {
+            let upiSection = document.getElementById('upiSection');
+            if (mode === 'UPI') {
+                upiSection.classList.remove('hidden');
+                updateUpiDetails();
+            } else {
+                upiSection.classList.add('hidden');
+            }
+        }
+
+        function updateUpiDetails() {
+            let studentName = document.getElementById('studentSelect').value || "STUDENT";
+            let select = document.getElementById('studentSelect');
+            let fee = (select.selectedIndex > 0) ? select.options[select.selectedIndex].dataset.fee : "0";
+            
+            let remarks = `${studentName} - Material Fee`;
+            document.getElementById('upiRemarksText').innerText = remarks;
+
+            let upiString = `upi://pay?pa=sdarpan128@oksbi&pn=MaterialFee&am=${fee}&cu=INR&tn=${encodeURIComponent(remarks)}`;
+            document.getElementById('upiQrImg').src = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(upiString)}`;
+        }
+
+        function handleProceed(event) {
+            event.preventDefault();
+
+            let studentName = document.getElementById('studentSelect').value;
+            let select = document.getElementById('studentSelect');
+            let fee = select.options[select.selectedIndex].dataset.fee || "0";
+            let paymentMode = document.querySelector('input[name="paymentMode"]:checked').value;
+
+            document.getElementById('confName').innerText = studentName;
+            document.getElementById('confFee').innerText = "₹" + fee;
+            document.getElementById('confMode').innerText = paymentMode;
+
+            showScreen('screenConfirm');
+        }
+
+        function backToForm() {
+            showScreen('screenForm');
+        }
+
+        async function submitFinalPayment() {
+            let studentName = document.getElementById('studentSelect').value;
+            let select = document.getElementById('studentSelect');
+            let fee = select.options[select.selectedIndex].dataset.fee || "0";
+            let paymentMode = document.querySelector('input[name="paymentMode"]:checked').value;
+            let timestamp = new Date().toLocaleString('en-GB');
+
+            let params = new URLSearchParams({
+                action: "recordPayment",
+                timestamp: timestamp,
+                studentName: studentName,
+                fee: fee,
+                paymentMode: paymentMode,
+                remarks: `${studentName} - Material Fee`
+            });
+
+            showScreen('screenLoader');
+
+            try {
+                await fetch(APPS_SCRIPT_WEB_APP_URL + "?" + params.toString());
+            } catch (err) {
+                console.error("Error writing to Sheet2:", err);
+            }
+
+            setTimeout(() => {
+                showScreen('screenSuccess');
+            }, 800);
+        }
+
+        function resetPortal() {
+            document.getElementById('feeForm').reset();
+            document.getElementById('feeDisplayBox').classList.add('hidden');
+            document.getElementById('upiSection').classList.add('hidden');
+            showScreen('screenForm');
+        }
+
+        function showScreen(screenId) {
+            ['screenForm', 'screenConfirm', 'screenLoader', 'screenSuccess'].forEach(id => {
+                document.getElementById(id).classList.add('hidden');
+            });
+            document.getElementById(screenId).classList.remove('hidden');
+            window.scrollTo(0, 0);
+        }
+    </script>
+</body>
+</html>
