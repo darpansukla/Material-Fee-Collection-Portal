@@ -13,30 +13,34 @@
     <style>
         body { 
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
-            background-color: #f5f5f7;
+            background-color: #faf9f9;
             -webkit-tap-highlight-color: transparent;
         }
         .apple-card {
-            background: rgba(255, 255, 255, 0.92);
+            background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(25px);
             -webkit-backdrop-filter: blur(25px);
-            border: 1px solid rgba(229, 229, 234, 0.8);
-            box-shadow: 0 10px 30px 0 rgba(0, 0, 0, 0.03);
+            border: 1px solid rgba(254, 226, 226, 0.6);
+            box-shadow: 0 12px 40px 0 rgba(225, 29, 72, 0.05);
         }
         .apple-header {
             background: rgba(255, 255, 255, 0.85);
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
-            border-bottom: 1px solid rgba(229, 229, 234, 0.6);
+            border-bottom: 1px solid rgba(254, 226, 226, 0.5);
         }
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(6px); }
             to { opacity: 1; transform: translateY(0); }
         }
         .animate-fade-in { animation: fadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        .custom-scrollbar::-webkit-scrollbar { width: 5px; height: 5px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 10px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
     </style>
 </head>
-<body class="text-slate-900 min-h-screen flex flex-col justify-between selection:bg-indigo-500 selection:text-white">
+<body class="text-slate-900 min-h-screen flex flex-col justify-between selection:bg-rose-600 selection:text-white">
 
     <!-- APP CONTAINER -->
     <div class="max-w-md w-full mx-auto p-4 sm:p-5 flex-grow flex flex-col justify-between space-y-4">
@@ -44,7 +48,7 @@
         <!-- HEADER -->
         <header class="apple-header rounded-3xl p-3.5 shadow-sm flex items-center justify-between">
             <div class="flex items-center space-x-2.5">
-                <div class="w-9 h-9 bg-slate-100 text-slate-800 rounded-2xl flex items-center justify-center text-xs border border-slate-200 shadow-inner">
+                <div class="w-9 h-9 bg-rose-50 text-rose-600 rounded-2xl flex items-center justify-center text-xs border border-rose-100 shadow-inner">
                     <i class="fa-solid fa-wallet"></i>
                 </div>
                 <div>
@@ -52,8 +56,13 @@
                     <p class="text-[9px] text-slate-400 font-medium">Material Fee Portal</p>
                 </div>
             </div>
-            <div class="bg-indigo-50 text-indigo-700 border border-indigo-100 px-2.5 py-1 rounded-full text-[9px] font-bold flex items-center gap-1.5">
-                <span class="w-2 h-2 rounded-full bg-indigo-500 animate-pulse"></span> Live Sync
+            <div class="flex items-center gap-2">
+                <button onclick="openAdminLogin()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-2.5 py-1.5 rounded-xl text-[10px] font-bold transition-all flex items-center gap-1 shadow-sm">
+                    <i class="fa-solid fa-lock text-[9px]"></i> Admin
+                </button>
+                <div class="bg-rose-50 text-rose-700 border border-rose-100 px-2 py-1 rounded-full text-[9px] font-bold flex items-center gap-1">
+                    <span class="w-2 h-2 rounded-full bg-rose-600 animate-pulse"></span> Live
+                </div>
             </div>
         </header>
 
@@ -66,23 +75,29 @@
 
             <form id="feeForm" onsubmit="handleProceed(event)" class="space-y-3.5">
                 
-                <!-- Student Name Dropdown -->
-                <div class="space-y-1">
+                <!-- Custom Student Selector Dropdown with Photos -->
+                <div class="space-y-1 relative">
                     <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider">Student Name <span class="text-rose-500">*</span></label>
-                    <div class="relative">
-                        <select id="studentSelect" required onchange="updateStudentFee()" class="w-full px-4 py-3 bg-slate-50/80 border border-slate-200 rounded-2xl text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-900 focus:bg-white transition-all appearance-none">
-                            <option value="" disabled selected>Loading students (A-Z)...</option>
-                        </select>
-                        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-slate-500">
-                            <i class="fa-solid fa-chevron-down text-[10px]"></i>
+                    
+                    <div id="studentDropdownBtn" onclick="toggleStudentDropdown()" class="w-full px-4 py-3 bg-slate-50/80 border border-slate-200 rounded-2xl text-xs font-semibold text-slate-800 flex items-center justify-between cursor-pointer hover:border-rose-300 transition-all">
+                        <span id="selectedStudentLabel" class="text-slate-400">Loading students...</span>
+                        <i class="fa-solid fa-chevron-down text-[10px] text-slate-500 transition-transform duration-200" id="dropdownChevron"></i>
+                    </div>
+
+                    <div id="studentDropdownList" class="hidden absolute left-0 right-0 top-full mt-1.5 bg-white border border-slate-200 rounded-2xl shadow-xl z-50 overflow-hidden animate-fade-in">
+                        <div class="p-2 border-b border-slate-100 bg-slate-50/50">
+                            <input type="text" id="studentSearchInput" oninput="filterStudents(this.value)" placeholder="Search student name..." class="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-rose-600">
+                        </div>
+                        <div id="studentOptionsContainer" class="max-h-60 overflow-y-auto custom-scrollbar divide-y divide-slate-100">
+                            <!-- Populated dynamically -->
                         </div>
                     </div>
                 </div>
 
                 <!-- Material Fee Display Box -->
-                <div id="feeDisplayBox" class="hidden space-y-1 bg-slate-50 border border-slate-200/80 p-3.5 rounded-2xl animate-fade-in">
+                <div id="feeDisplayBox" class="hidden space-y-1 bg-rose-50/30 border border-rose-100 p-3.5 rounded-2xl animate-fade-in">
                     <div class="flex items-center justify-between">
-                        <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Material Fee Amount:</span>
+                        <span class="text-[10px] font-bold text-rose-500 uppercase tracking-wider">Material Fee Amount:</span>
                         <span class="text-[10px] bg-emerald-100 text-emerald-800 font-bold px-2 py-0.5 rounded-full">Due</span>
                     </div>
                     <p id="feeAmountText" class="text-sm font-black text-slate-900 mt-0.5">₹0</p>
@@ -94,26 +109,26 @@
                     <div class="grid grid-cols-2 gap-2">
                         <label class="cursor-pointer">
                             <input type="radio" name="paymentMode" value="Cash" required onclick="togglePaymentMode('Cash')" class="peer sr-only">
-                            <div class="py-2.5 text-center text-xs font-bold bg-slate-50 border border-slate-200 rounded-2xl peer-checked:bg-slate-900 peer-checked:text-white peer-checked:border-slate-900 transition-all shadow-sm">
+                            <div class="py-2.5 text-center text-xs font-bold bg-slate-50 border border-slate-200 rounded-2xl peer-checked:bg-rose-600 peer-checked:text-white peer-checked:border-rose-600 transition-all shadow-sm">
                                 <i class="fa-solid fa-money-bill-wave mr-1"></i> Cash
                             </div>
                         </label>
                         <label class="cursor-pointer">
                             <input type="radio" name="paymentMode" value="UPI" onclick="togglePaymentMode('UPI')" class="peer sr-only">
-                            <div class="py-2.5 text-center text-xs font-bold bg-slate-50 border border-slate-200 rounded-2xl peer-checked:bg-slate-900 peer-checked:text-white peer-checked:border-slate-900 transition-all shadow-sm">
+                            <div class="py-2.5 text-center text-xs font-bold bg-slate-50 border border-slate-200 rounded-2xl peer-checked:bg-rose-600 peer-checked:text-white peer-checked:border-rose-600 transition-all shadow-sm">
                                 <i class="fa-solid fa-qrcode mr-1"></i> UPI
                             </div>
                         </label>
                     </div>
                 </div>
 
-                <!-- UPI QR Code Section (Hidden by default) -->
-                <div id="upiSection" class="hidden space-y-3 bg-indigo-50/50 border border-indigo-100 p-4 rounded-2xl animate-fade-in text-center">
+                <!-- UPI QR Code Section -->
+                <div id="upiSection" class="hidden space-y-3 bg-rose-50/50 border border-rose-100 p-4 rounded-2xl animate-fade-in text-center">
                     <div class="space-y-0.5">
-                        <p class="text-[10px] font-bold text-indigo-900 uppercase tracking-wider">Scan & Pay via UPI</p>
-                        <p class="text-[11px] font-mono font-semibold text-indigo-700">sdarpan128@oksbi</p>
+                        <p class="text-[10px] font-bold text-rose-900 uppercase tracking-wider">Scan & Pay via UPI</p>
+                        <p class="text-[11px] font-mono font-semibold text-rose-700">sdarpan128@oksbi</p>
                     </div>
-                    <div class="bg-white p-3 rounded-2xl inline-block border border-indigo-100 shadow-sm">
+                    <div class="bg-white p-3 rounded-2xl inline-block border border-rose-100 shadow-sm">
                         <img id="upiQrImg" src="" alt="UPI QR Code" class="w-36 h-36 mx-auto rounded-lg">
                     </div>
                     <div class="bg-amber-50 border border-amber-200/60 p-2.5 rounded-xl text-left">
@@ -123,7 +138,7 @@
                 </div>
 
                 <!-- Submit Button -->
-                <button type="submit" id="submitBtn" class="w-full mt-2 bg-slate-900 hover:bg-black text-white font-bold py-3.5 px-6 rounded-2xl text-xs transition-all shadow-md shadow-slate-900/10 active:scale-[0.98] flex items-center justify-center gap-2">
+                <button type="submit" id="submitBtn" class="w-full mt-2 bg-rose-600 hover:bg-rose-700 text-white font-bold py-3.5 px-6 rounded-2xl text-xs transition-all shadow-md shadow-rose-600/20 active:scale-[0.98] flex items-center justify-center gap-2">
                     Proceed to Confirmation <i class="fa-solid fa-arrow-right text-[10px]"></i>
                 </button>
             </form>
@@ -132,16 +147,23 @@
         <!-- SCREEN 2: CONFIRMATION PAGE -->
         <div id="screenConfirm" class="hidden apple-card rounded-3xl p-6 space-y-4 my-auto animate-fade-in">
             <div class="space-y-1 text-center">
-                <div class="w-12 h-12 bg-amber-50 text-amber-600 rounded-2xl flex items-center justify-center text-xl mx-auto border border-amber-100 shadow-inner mb-2">
+                <div class="w-12 h-12 bg-rose-50 text-rose-600 rounded-2xl flex items-center justify-center text-xl mx-auto border border-rose-100 shadow-inner mb-2">
                     <i class="fa-solid fa-file-invoice"></i>
                 </div>
                 <h2 class="text-sm font-black text-slate-900">Confirm Payment Details</h2>
                 <p class="text-[11px] text-slate-400">Please verify transaction parameters before final submit.</p>
             </div>
             
-            <div class="bg-slate-50 p-3.5 rounded-2xl border border-slate-200/60 text-left space-y-2 text-xs">
-                <div class="flex justify-between"><span class="text-slate-400">Student Name:</span><span class="font-bold text-slate-800" id="confName">-</span></div>
-                <div class="flex justify-between"><span class="text-slate-400">Material Fee:</span><span class="font-bold text-indigo-700" id="confFee">-</span></div>
+            <div class="bg-slate-50 p-3.5 rounded-2xl border border-slate-200/60 text-left space-y-3 text-xs">
+                <div class="flex items-center gap-3 pb-2 border-b border-slate-200/60">
+                    <img id="confPhoto" src="" alt="Photo" class="w-10 h-10 rounded-xl object-cover border border-slate-200 bg-white shadow-sm">
+                    <div>
+                        <p class="text-[9px] font-bold text-slate-400 uppercase">Student</p>
+                        <p class="font-bold text-slate-800" id="confName">-</p>
+                    </div>
+                </div>
+                <div class="flex justify-between"><span class="text-slate-400">Fine Arts Class:</span><span class="font-bold text-slate-800" id="confClass">-</span></div>
+                <div class="flex justify-between"><span class="text-slate-400">Material Fee:</span><span class="font-bold text-rose-600" id="confFee">-</span></div>
                 <div class="flex justify-between"><span class="text-slate-400">Payment Mode:</span><span class="font-bold text-slate-800" id="confMode">-</span></div>
             </div>
 
@@ -149,19 +171,19 @@
                 <button onclick="backToForm()" class="w-1/3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-3.5 px-4 rounded-2xl text-xs transition-all active:scale-[0.98]">
                     Back
                 </button>
-                <button onclick="submitFinalPayment()" class="w-2/3 bg-slate-900 hover:bg-black text-white font-bold py-3.5 px-6 rounded-2xl text-xs transition-all shadow-md active:scale-[0.98]">
-                    Confirm & Save to Sheet2
+                <button onclick="submitFinalPayment()" class="w-2/3 bg-rose-600 hover:bg-rose-700 text-white font-bold py-3.5 px-6 rounded-2xl text-xs transition-all shadow-md shadow-rose-600/20 active:scale-[0.98]">
+                    Submit
                 </button>
             </div>
         </div>
 
-        <!-- SCREEN 3: LOADING SPINNER SCREEN -->
+        <!-- SCREEN 3: LOADING SPINNER -->
         <div id="screenLoader" class="hidden apple-card rounded-3xl p-8 flex flex-col items-center justify-center space-y-4 my-auto">
-            <div class="animate-spin rounded-full h-10 w-10 border-2 border-slate-200 border-t-slate-900"></div>
-            <p class="text-slate-500 text-xs font-semibold tracking-wide animate-pulse">Processing & Saving to Sheet2...</p>
+            <div class="animate-spin rounded-full h-10 w-10 border-2 border-rose-100 border-t-rose-600"></div>
+            <p class="text-slate-500 text-xs font-semibold tracking-wide animate-pulse">Submitting data to Sheet2...</p>
         </div>
 
-        <!-- SCREEN 4: SUCCESS CONFIRMATION SCREEN -->
+        <!-- SCREEN 4: SUCCESS CONFIRMATION -->
         <div id="screenSuccess" class="hidden apple-card rounded-3xl p-6 text-center space-y-4 my-auto animate-fade-in">
             <div class="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center text-xl mx-auto border border-emerald-100 shadow-inner">
                 <i class="fa-solid fa-circle-check"></i>
@@ -171,9 +193,85 @@
                 <p class="text-[11px] text-slate-400">Data has been successfully pushed to Sheet2.</p>
             </div>
             
-            <button onclick="resetPortal()" class="w-full bg-slate-900 hover:bg-black text-white font-bold py-3.5 px-6 rounded-2xl text-xs transition-all shadow-md active:scale-[0.98]">
+            <button onclick="resetPortal()" class="w-full bg-rose-600 hover:bg-rose-700 text-white font-bold py-3.5 px-6 rounded-2xl text-xs transition-all shadow-md shadow-rose-600/20 active:scale-[0.98]">
                 Collect Another Fee
             </button>
+        </div>
+
+        <!-- SCREEN 5: ADMIN LOGIN -->
+        <div id="screenAdminLogin" class="hidden apple-card rounded-3xl p-6 space-y-4 my-auto animate-fade-in text-center">
+            <div class="w-12 h-12 bg-rose-50 text-rose-600 rounded-2xl flex items-center justify-center text-xl mx-auto border border-rose-100 shadow-inner mb-2">
+                <i class="fa-solid fa-shield-halved"></i>
+            </div>
+            <h2 class="text-sm font-black text-slate-900">Admin Authentication</h2>
+            <p class="text-[11px] text-slate-400">Enter Admin PIN (2026) to view fee collection reports.</p>
+            
+            <div class="space-y-3">
+                <input type="password" id="adminPinInput" placeholder="Enter PIN" maxlength="4" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-center text-lg font-mono tracking-widest focus:outline-none focus:ring-2 focus:ring-rose-600">
+                <div class="flex gap-2">
+                    <button onclick="showScreen('screenForm')" class="w-1/2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-3 rounded-2xl text-xs">Cancel</button>
+                    <button onclick="verifyAdminPin()" class="w-1/2 bg-rose-600 hover:bg-rose-700 text-white font-bold py-3 rounded-2xl text-xs shadow-md shadow-rose-600/20">Access</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- SCREEN 6: ADMIN DASHBOARD -->
+        <div id="screenAdminDashboard" class="hidden apple-card rounded-3xl p-5 space-y-4 my-auto animate-fade-in text-left">
+            <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                <div>
+                    <h2 class="text-xs font-black text-slate-900 uppercase tracking-tight">Admin Dashboard</h2>
+                    <p class="text-[10px] text-slate-400">Live Collection Summary from Sheet2</p>
+                </div>
+                <button onclick="showScreen('screenForm')" class="w-8 h-8 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center text-xs hover:bg-slate-200">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <!-- Metrics Grid -->
+            <div class="grid grid-cols-2 gap-2">
+                <div class="bg-rose-50/60 border border-rose-100 p-3 rounded-2xl">
+                    <p class="text-[9px] font-bold text-rose-500 uppercase tracking-wider">Total Students Paid</p>
+                    <p id="adminTotalStudents" class="text-lg font-black text-slate-900 mt-0.5">0</p>
+                </div>
+                <div class="bg-emerald-50/60 border border-emerald-100 p-3 rounded-2xl">
+                    <p class="text-[9px] font-bold text-emerald-600 uppercase tracking-wider">Total Collected</p>
+                    <p id="adminTotalAmount" class="text-lg font-black text-slate-900 mt-0.5">₹0</p>
+                </div>
+            </div>
+
+            <!-- Mode Breakdown -->
+            <div class="grid grid-cols-2 gap-2">
+                <div class="bg-blue-50/60 border border-blue-100 p-3 rounded-2xl">
+                    <p class="text-[9px] font-bold text-blue-600 uppercase tracking-wider">Cash Collection</p>
+                    <p id="adminCashAmount" class="text-sm font-black text-slate-900 mt-0.5">₹0</p>
+                </div>
+                <div class="bg-purple-50/60 border border-purple-100 p-3 rounded-2xl">
+                    <p class="text-[9px] font-bold text-purple-600 uppercase tracking-wider">UPI Collection</p>
+                    <p id="adminUpiAmount" class="text-sm font-black text-slate-900 mt-0.5">₹0</p>
+                </div>
+            </div>
+
+            <!-- Detailed Students Table -->
+            <div class="space-y-1.5">
+                <div class="flex justify-between items-center">
+                    <span class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Transactions from Sheet2</span>
+                    <button onclick="fetchAdminData()" class="text-[10px] text-rose-600 font-bold hover:underline"><i class="fa-solid fa-rotate mr-1"></i> Refresh</button>
+                </div>
+                <div class="border border-slate-200 rounded-2xl overflow-hidden bg-white max-h-52 overflow-y-auto custom-scrollbar">
+                    <table class="w-full text-left text-[11px]">
+                        <thead class="bg-slate-50 border-b border-slate-200 sticky top-0">
+                            <tr>
+                                <th class="p-2.5 font-bold text-slate-600">Student / Timestamp</th>
+                                <th class="p-2.5 font-bold text-slate-600">Mode</th>
+                                <th class="p-2.5 font-bold text-slate-600 text-right">Amount</th>
+                            </tr>
+                        </thead>
+                        <tbody id="adminTransactionsTable" class="divide-y divide-slate-100">
+                            <tr><td colspan="3" class="p-4 text-center text-slate-400">Loading records...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
 
         <!-- FOOTER -->
@@ -186,45 +284,183 @@
     <!-- SCRIPT LOGIC -->
     <script>
         const APPS_SCRIPT_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbySxAcdlDZ_ZMv8T9ADpSmyhXddvDKHwdB9j8s5_1f-UIxRkCl2s8wbiSCcripXIVjrDg/exec";
+        const PUBLIC_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vR9MYoRpbaJg7oK3vqkTjfsm616eD9xvUeeE3DxTSzWCF5gCdBOdqfnQQbbwbnycXopvrScE5kg-3R6/pub?gid=0&single=true&output=csv";
+        const ADMIN_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRPkHc9ph04i3PFILd6jh1vA_nJ5adJJjYhkBHS-_JpPd6ZH1e0DXMLk1ma1wo1YzzXjiYf7pbDikfS/pub?gid=804557737&single=true&output=csv";
 
         let studentsData = [];
+        let selectedStudentIndex = "";
 
-        window.addEventListener('DOMContentLoaded', async () => {
-            await fetchSheetData();
+        window.addEventListener('DOMContentLoaded', () => {
+            let cachedData = localStorage.getItem('cachedCsvStudentsDrive');
+            if (cachedData) {
+                try {
+                    studentsData = JSON.parse(cachedData);
+                    populateStudentList(studentsData);
+                } catch (e) {
+                    console.error("Cache parse error", e);
+                }
+            }
+            fetchCsvData();
+
+            document.addEventListener('click', (e) => {
+                if (!e.target.closest('#studentDropdownBtn') && !e.target.closest('#studentDropdownList')) {
+                    closeStudentDropdown();
+                }
+            });
         });
 
-        async function fetchSheetData() {
-            try {
-                let response = await fetch(APPS_SCRIPT_WEB_APP_URL + "?action=getStudents");
-                let result = await response.json();
-                studentsData = result.students || [];
-            } catch (err) {
-                console.error("Error fetching students:", err);
-                studentsData = [];
+        function getDriveDirectLink(url) {
+            if (!url) return "";
+            let match = url.match(/\/file\/d\/([a-zA-Z0-9_-]+)/) || url.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+            if (match && match[1]) {
+                return `https://lh3.googleusercontent.com/d/${match[1]}=s220`;
             }
-
-            // Sort students A to Z alphabetically by name
-            studentsData.sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'accent', numeric: true }));
-
-            let select = document.getElementById('studentSelect');
-            select.innerHTML = '<option value="" disabled selected>Select Student Name</option>';
-            
-            studentsData.forEach(item => {
-                let opt = document.createElement('option');
-                opt.value = item.name;
-                opt.textContent = item.name;
-                opt.dataset.fee = item.fee || "0";
-                select.appendChild(opt);
-            });
+            return url;
         }
 
-        function updateStudentFee() {
-            let select = document.getElementById('studentSelect');
-            let selectedOpt = select.options[select.selectedIndex];
-            let fee = selectedOpt.dataset.fee || "0";
+        async function fetchCsvData() {
+            try {
+                let response = await fetch(PUBLIC_CSV_URL);
+                let csvText = await response.text();
+                studentsData = parseCSV(csvText);
+                
+                if (studentsData.length > 0) {
+                    localStorage.setItem('cachedCsvStudentsDrive', JSON.stringify(studentsData));
+                    populateStudentList(studentsData);
+                }
+            } catch (err) {
+                console.error("Error fetching CSV:", err);
+            }
+        }
 
-            document.getElementById('feeAmountText').innerText = "₹" + fee;
+        function parseCSV(text) {
+            let lines = text.split('\n');
+            if (lines.length < 2) return [];
+
+            let headers = parseCSVLine(lines[0]);
+            let nameIdx = headers.indexOf("Student Name");
+            let classIdx = headers.indexOf("Appearing Fine Arts Class");
+            let photoIdx = headers.indexOf("Passport Photo URL");
+            let feeIdx = headers.indexOf("Material Fee");
+
+            let result = [];
+            for (let i = 1; i < lines.length; i++) {
+                let currentLine = lines[i].trim();
+                if (!currentLine) continue;
+                let cols = parseCSVLine(currentLine);
+
+                if (cols.length > nameIdx) {
+                    let name = cols[nameIdx] ? cols[nameIdx].trim() : "";
+                    if (name) {
+                        let rawPhoto = photoIdx !== -1 && cols[photoIdx] ? cols[photoIdx].trim() : "";
+                        result.push({
+                            name: name,
+                            fineArtsClass: classIdx !== -1 && cols[classIdx] ? cols[classIdx].trim() : "-",
+                            photoUrl: getDriveDirectLink(rawPhoto),
+                            fee: feeIdx !== -1 && cols[feeIdx] ? cols[feeIdx].trim().replace(/[^0-9.]/g, '') : "0"
+                        });
+                    }
+                }
+            }
+            return result;
+        }
+
+        function parseCSVLine(line) {
+            let result = [];
+            let start = 0;
+            let inQuotes = false;
+            for (let i = 0; i < line.length; i++) {
+                if (line[i] === '"') {
+                    inQuotes = !inQuotes;
+                } else if (line[i] === ',' && !inQuotes) {
+                    result.push(line.substring(start, i).replace(/^"|"$/g, '').trim());
+                    start = i + 1;
+                }
+            }
+            result.push(line.substring(start).replace(/^"|"$/g, '').trim());
+            return result;
+        }
+
+        function populateStudentList(data, filter = "") {
+            data.sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'accent', numeric: true }));
+
+            let container = document.getElementById('studentOptionsContainer');
+            container.innerHTML = "";
+
+            let filtered = data.filter(s => s.name.toLowerCase().includes(filter.toLowerCase()));
+
+            if (filtered.length === 0) {
+                container.innerHTML = '<div class="p-3 text-center text-xs text-slate-400">No students found</div>';
+                return;
+            }
+
+            filtered.forEach((student) => {
+                let originalIndex = studentsData.findIndex(s => s.name === student.name && s.fineArtsClass === student.fineArtsClass);
+                
+                let div = document.createElement('div');
+                div.className = "flex items-center gap-3 p-2.5 hover:bg-rose-50/50 cursor-pointer transition-all";
+                div.onclick = () => selectStudent(originalIndex);
+
+                let photoHtml = student.photoUrl 
+                    ? `<img src="${student.photoUrl}" alt="" class="w-9 h-9 rounded-xl object-cover border border-slate-200 bg-slate-100 flex-shrink-0">`
+                    : `<div class="w-9 h-9 rounded-xl bg-rose-100 text-rose-600 flex items-center justify-center font-bold text-xs flex-shrink-0"><i class="fa-solid fa-user"></i></div>`;
+
+                div.innerHTML = `
+                    ${photoHtml}
+                    <div class="overflow-hidden">
+                        <p class="text-xs font-bold text-slate-800 truncate">${student.name}</p>
+                        <p class="text-[10px] text-slate-400 truncate">Class: ${student.fineArtsClass}</p>
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+
+            if(document.getElementById('selectedStudentLabel').innerText === "Loading students...") {
+                document.getElementById('selectedStudentLabel').innerText = "Select Student Name";
+            }
+        }
+
+        function toggleStudentDropdown() {
+            let list = document.getElementById('studentDropdownList');
+            let chevron = document.getElementById('dropdownChevron');
+            if (list.classList.contains('hidden')) {
+                list.classList.remove('hidden');
+                chevron.style.transform = "rotate(180deg)";
+                document.getElementById('studentSearchInput').focus();
+            } else {
+                closeStudentDropdown();
+            }
+        }
+
+        function closeStudentDropdown() {
+            document.getElementById('studentDropdownList').classList.add('hidden');
+            document.getElementById('dropdownChevron').style.transform = "rotate(0deg)";
+        }
+
+        function filterStudents(query) {
+            populateStudentList(studentsData, query);
+        }
+
+        function selectStudent(index) {
+            selectedStudentIndex = index;
+            let student = studentsData[index];
+
+            let photoHtml = student.photoUrl 
+                ? `<img src="${student.photoUrl}" alt="" class="w-7 h-7 rounded-lg object-cover border border-slate-200 bg-slate-100 flex-shrink-0">`
+                : `<div class="w-7 h-7 rounded-lg bg-rose-100 text-rose-600 flex items-center justify-center font-bold text-xs flex-shrink-0"><i class="fa-solid fa-user"></i></div>`;
+
+            document.getElementById('selectedStudentLabel').innerHTML = `
+                <div class="flex items-center gap-2.5">
+                    ${photoHtml}
+                    <span class="font-bold text-slate-800">${student.name} <span class="text-slate-400 font-normal">(${student.fineArtsClass})</span></span>
+                </div>
+            `;
+            
+            closeStudentDropdown();
+
+            document.getElementById('feeAmountText').innerText = "₹" + (student.fee || "0");
             document.getElementById('feeDisplayBox').classList.remove('hidden');
+
             updateUpiDetails();
         }
 
@@ -239,28 +475,39 @@
         }
 
         function updateUpiDetails() {
-            let studentName = document.getElementById('studentSelect').value || "STUDENT";
-            let select = document.getElementById('studentSelect');
-            let fee = (select.selectedIndex > 0) ? select.options[select.selectedIndex].dataset.fee : "0";
+            if (selectedStudentIndex === "") return;
+            let student = studentsData[selectedStudentIndex];
             
-            let remarks = `${studentName} - Material Fee`;
+            let remarks = `${student.name} - Material Fee`;
             document.getElementById('upiRemarksText').innerText = remarks;
 
-            let upiString = `upi://pay?pa=sdarpan128@oksbi&pn=MaterialFee&am=${fee}&cu=INR&tn=${encodeURIComponent(remarks)}`;
+            let upiString = `upi://pay?pa=sdarpan128@oksbi&pn=MaterialFee&am=${student.fee || 0}&cu=INR&tn=${encodeURIComponent(remarks)}`;
             document.getElementById('upiQrImg').src = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(upiString)}`;
         }
 
         function handleProceed(event) {
             event.preventDefault();
 
-            let studentName = document.getElementById('studentSelect').value;
-            let select = document.getElementById('studentSelect');
-            let fee = select.options[select.selectedIndex].dataset.fee || "0";
+            if (selectedStudentIndex === "") {
+                alert("Please select a student");
+                return;
+            }
+
+            let student = studentsData[selectedStudentIndex];
             let paymentMode = document.querySelector('input[name="paymentMode"]:checked').value;
 
-            document.getElementById('confName').innerText = studentName;
-            document.getElementById('confFee').innerText = "₹" + fee;
+            document.getElementById('confName').innerText = student.name;
+            document.getElementById('confClass').innerText = student.fineArtsClass;
+            document.getElementById('confFee').innerText = "₹" + student.fee;
             document.getElementById('confMode').innerText = paymentMode;
+            
+            let confPhoto = document.getElementById('confPhoto');
+            if(student.photoUrl) {
+                confPhoto.src = student.photoUrl;
+                confPhoto.classList.remove('hidden');
+            } else {
+                confPhoto.classList.add('hidden');
+            }
 
             showScreen('screenConfirm');
         }
@@ -270,19 +517,18 @@
         }
 
         async function submitFinalPayment() {
-            let studentName = document.getElementById('studentSelect').value;
-            let select = document.getElementById('studentSelect');
-            let fee = select.options[select.selectedIndex].dataset.fee || "0";
+            let student = studentsData[selectedStudentIndex];
             let paymentMode = document.querySelector('input[name="paymentMode"]:checked').value;
             let timestamp = new Date().toLocaleString('en-GB');
 
             let params = new URLSearchParams({
                 action: "recordPayment",
                 timestamp: timestamp,
-                studentName: studentName,
-                fee: fee,
+                studentName: student.name,
+                fineArtsClass: student.fineArtsClass,
+                fee: student.fee,
                 paymentMode: paymentMode,
-                remarks: `${studentName} - Material Fee`
+                remarks: `${student.name} - Material Fee`
             });
 
             showScreen('screenLoader');
@@ -300,13 +546,124 @@
 
         function resetPortal() {
             document.getElementById('feeForm').reset();
+            selectedStudentIndex = "";
+            document.getElementById('selectedStudentLabel').innerHTML = '<span class="text-slate-400">Select Student Name</span>';
             document.getElementById('feeDisplayBox').classList.add('hidden');
             document.getElementById('upiSection').classList.add('hidden');
             showScreen('screenForm');
         }
 
+        function openAdminLogin() {
+            document.getElementById('adminPinInput').value = "";
+            showScreen('screenAdminLogin');
+            document.getElementById('adminPinInput').focus();
+        }
+
+        function verifyAdminPin() {
+            let pin = document.getElementById('adminPinInput').value;
+            if (pin === "2026") {
+                showScreen('screenAdminDashboard');
+                fetchAdminData();
+            } else {
+                alert("Incorrect Admin PIN");
+                document.getElementById('adminPinInput').value = "";
+            }
+        }
+
+        async function fetchAdminData() {
+            let tableBody = document.getElementById('adminTransactionsTable');
+            tableBody.innerHTML = `<tr><td colspan="3" class="p-4 text-center text-slate-400">Loading records from Sheet2...</td></tr>`;
+
+            try {
+                let response = await fetch(ADMIN_CSV_URL + "&cacheBust=" + new Date().getTime());
+                let csvText = await response.text();
+                parseAdminCSV(csvText);
+            } catch (err) {
+                console.error("Error fetching admin CSV:", err);
+                tableBody.innerHTML = `<tr><td colspan="3" class="p-4 text-center text-rose-500">Failed to load Sheet2 data. Check CORS or Publish settings.</td></tr>`;
+            }
+        }
+
+        function parseAdminCSV(text) {
+            let lines = text.split('\n');
+            if (lines.length < 2) {
+                updateAdminMetrics([], 0, 0, 0);
+                return;
+            }
+
+            let transactions = [];
+            let totalAmount = 0;
+            let cashAmount = 0;
+            let upiAmount = 0;
+
+            for (let i = 1; i < lines.length; i++) {
+                let currentLine = lines[i].trim();
+                if (!currentLine) continue;
+                let cols = parseCSVLine(currentLine);
+
+                if (cols.length >= 4) {
+                    let timestamp = cols[0] || "-";
+                    let name = cols[1] || "-";
+                    let feeStr = (cols[2] || "0").replace(/[^0-9.]/g, '');
+                    let fee = parseFloat(feeStr) || 0;
+                    let mode = cols[3] || "Cash";
+
+                    totalAmount += fee;
+                    if (mode.toUpperCase().includes("UPI")) {
+                        upiAmount += fee;
+                    } else {
+                        cashAmount += fee;
+                    }
+
+                    transactions.push({ timestamp, name, fee, mode });
+                } 
+                else if (cols.length === 1 && cols[0].length > 0) {
+                    let rowText = cols[0];
+                    transactions.push({ 
+                        timestamp: "Recent", 
+                        name: rowText, 
+                        fee: 0, 
+                        mode: "Cash" 
+                    });
+                }
+            }
+
+            updateAdminMetrics(transactions, totalAmount, cashAmount, upiAmount);
+        }
+
+        function updateAdminMetrics(transactions, totalAmount, cashAmount, upiAmount) {
+            document.getElementById('adminTotalStudents').innerText = transactions.length;
+            document.getElementById('adminTotalAmount').innerText = "₹" + totalAmount.toLocaleString();
+            document.getElementById('adminCashAmount').innerText = "₹" + cashAmount.toLocaleString();
+            document.getElementById('adminUpiAmount').innerText = "₹" + upiAmount.toLocaleString();
+
+            let tableBody = document.getElementById('adminTransactionsTable');
+            tableBody.innerHTML = "";
+
+            if (transactions.length === 0) {
+                tableBody.innerHTML = `<tr><td colspan="3" class="p-4 text-center text-slate-400">No payment records found in Sheet2.</td></tr>`;
+                return;
+            }
+
+            transactions.reverse().forEach(tx => {
+                let tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-50";
+                tr.innerHTML = `
+                    <td class="p-2.5">
+                        <p class="font-bold text-slate-800">${tx.name}</p>
+                        <p class="text-[9px] text-slate-400">${tx.timestamp}</p>
+                    </td>
+                    <td class="p-2.5">
+                        <span class="px-2 py-0.5 rounded-full text-[9px] font-bold ${tx.mode.toUpperCase().includes('UPI') ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700'}">${tx.mode}</span>
+                    </td>
+                    <td class="p-2.5 text-right font-bold text-rose-600">₹${tx.fee.toLocaleString()}</td>
+                `;
+                tableBody.appendChild(tr);
+            });
+        }
+
         function showScreen(screenId) {
-            ['screenForm', 'screenConfirm', 'screenLoader', 'screenSuccess'].forEach(id => {
+            ['screenForm', 'screenConfirm', 'screenLoader', 'screenSuccess', 'screenAdminLogin', 'screenAdminDashboard'].forEach(id => {
                 document.getElementById(id).classList.add('hidden');
             });
             document.getElementById(screenId).classList.remove('hidden');
