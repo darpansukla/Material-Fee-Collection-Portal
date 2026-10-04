@@ -361,11 +361,12 @@
             if (lines.length < 2) return [];
 
             let headers = parseCSVLine(lines[0]);
+            let institutionIdx = headers.indexOf("Institution");
             let nameIdx = headers.indexOf("Student Name");
             let classIdx = headers.indexOf("Appearing Fine Arts Class");
-            let schoolIdx = headers.indexOf("School Name") !== -1 ? headers.indexOf("School Name") : headers.indexOf("School");
             let photoIdx = headers.indexOf("Passport Photo URL");
             let feeIdx = headers.indexOf("Material Fee");
+            let mobileIdx = headers.indexOf("Mobile (WhatsApp)");
 
             let result = [];
             for (let i = 1; i < lines.length; i++) {
@@ -375,16 +376,18 @@
 
                 if (cols.length > nameIdx) {
                     let name = cols[nameIdx] ? cols[nameIdx].trim() : "";
+                    let institution = institutionIdx !== -1 && cols[institutionIdx] ? cols[institutionIdx].trim() : "";
+                    
                     if (name) {
                         let rawPhoto = photoIdx !== -1 && cols[photoIdx] ? cols[photoIdx].trim() : "";
-                        let schoolName = schoolIdx !== -1 && cols[schoolIdx] ? cols[schoolIdx].trim() : "Other";
-                        if (!schoolName) schoolName = "Other";
+                        let mobile = mobileIdx !== -1 && cols[mobileIdx] ? cols[mobileIdx].trim().replace(/[^0-9]/g, '') : "";
 
                         result.push({
                             name: name,
+                            institution: institution,
                             fineArtsClass: classIdx !== -1 && cols[classIdx] ? cols[classIdx].trim() : "-",
-                            school: schoolName,
                             photoUrl: getDriveDirectLink(rawPhoto),
+                            mobile: mobile,
                             fee: feeIdx !== -1 && cols[feeIdx] ? cols[feeIdx].trim().replace(/[^0-9.]/g, '') : "0"
                         });
                     }
@@ -410,12 +413,23 @@
         }
 
         function populateStudentList(data, filter = "") {
-            data.sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'accent', numeric: true }));
+            // Filter strictly for the two institutions in the dropdown
+            let allowedInstitutions = [
+                "south point visual & performing arts school",
+                "puthichitra school of fine arts & crafts, ghy"
+            ];
+
+            let validStudents = data.filter(s => {
+                let instLower = s.institution.toLowerCase();
+                return allowedInstitutions.some(target => instLower.includes(target));
+            });
+
+            validStudents.sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'accent', numeric: true }));
 
             let container = document.getElementById('studentOptionsContainer');
             container.innerHTML = "";
 
-            let filtered = data.filter(s => s.name.toLowerCase().includes(filter.toLowerCase()));
+            let filtered = validStudents.filter(s => s.name.toLowerCase().includes(filter.toLowerCase()));
 
             if (filtered.length === 0) {
                 container.innerHTML = '<div class="p-3 text-center text-xs text-slate-400">No students found</div>';
@@ -437,7 +451,7 @@
                     ${photoHtml}
                     <div class="overflow-hidden">
                         <p class="text-xs font-bold text-slate-800 truncate">${student.name}</p>
-                        <p class="text-[10px] text-slate-400 truncate">Class: ${student.fineArtsClass} | ${student.school}</p>
+                        <p class="text-[10px] text-slate-400 truncate">Class: ${student.fineArtsClass} | ${student.institution}</p>
                     </div>
                 `;
                 container.appendChild(div);
@@ -752,7 +766,6 @@
 
             let grandTotal = grandCash + grandUpi;
             
-            // Count unique student names or total paid transactions count
             document.getElementById('totalStudentsPaidCount').innerText = allTransactionsCache.length;
             document.getElementById('grandTotalAll').innerText = "₹" + grandTotal.toLocaleString();
             document.getElementById('grandTotalCash').innerText = "₹" + grandCash.toLocaleString();
@@ -818,25 +831,38 @@
             });
         }
 
+        function sendWhatsAppReminder(studentName, studentMobile) {
+            let message = `*ANNUAL ART EXHIBITION 2026*\n\n` +
+                          `Dear ${studentName},\n\n` +
+                          `If you have not yet purchased your *Exhibition Kit*, please complete your kit payment at the earliest.\n\n` +
+                          `*Kit Payment:*\n` +
+                          `You can make the payment by *UPI or Cash*, as per your convenience.\n\n` +
+                          `https://darpansukla.github.io/Exhibition-Kit/\n\n` +
+                          `Your timely payment will help us complete the exhibition arrangements smoothly.\n\n` +
+                          `Thank you.`;
+
+            let url = `https://wa.me/${studentMobile ? studentMobile : ''}?text=${encodeURIComponent(message)}`;
+            window.open(url, '_blank');
+        }
+
         function renderPendingSchoolWise() {
             let container = document.getElementById('pendingSchoolContainer');
             container.innerHTML = `<div class="p-4 text-center text-xs text-slate-400">Loading pending students...</div>`;
 
             let paidNamesSet = new Set(allTransactionsCache.map(tx => tx.name.trim().toLowerCase()));
 
-            let targetSchools = [
-                "south point visual & performing arts school", 
-                "puthichitra school of fine arts",
-                "south point", 
-                "puthichitra"
+            let targetInstitutions = [
+                "south point visual & performing arts school",
+                "puthichitra school of fine arts & crafts, ghy"
             ];
 
             let pendingStudents = studentsData.filter(s => {
-                let isPaid = paidNamesSet.has(s.name.trim().toLowerCase());
-                if (isPaid) return false;
+                let instLower = s.institution.toLowerCase();
+                let matchesTarget = targetInstitutions.some(target => instLower.includes(target));
+                if (!matchesTarget) return false;
 
-                let schoolLower = (s.school || "").toLowerCase();
-                return targetSchools.some(target => schoolLower.includes(target));
+                let isPaid = paidNamesSet.has(s.name.trim().toLowerCase());
+                return !isPaid;
             });
 
             document.getElementById('pendingCountBadge').innerText = `${pendingStudents.length} Pending`;
@@ -848,10 +874,9 @@
 
             let schoolsMap = {};
             pendingStudents.forEach(s => {
-                let school = s.school || "Other";
                 let key = "South Point Visual & Performing Arts School";
-                if (school.toLowerCase().includes("puthichitra")) {
-                    key = "Puthichitra School of Fine Arts";
+                if (s.institution.toLowerCase().includes("puthichitra")) {
+                    key = "Puthichitra School of Fine Arts & Crafts, Ghy";
                 }
                 if (!schoolsMap[key]) schoolsMap[key] = [];
                 schoolsMap[key].push(s);
@@ -868,7 +893,7 @@
                 card.className = "bg-white border border-slate-200/80 rounded-2xl overflow-hidden shadow-sm transition-all";
 
                 let studentsListHtml = list.map(st => `
-                    <div class="flex items-center justify-between py-2 border-b border-slate-100 last:border-none text-[11px]">
+                    <div class="flex items-center justify-between py-2.5 border-b border-slate-100 last:border-none text-[11px]">
                         <div class="flex items-center gap-2.5">
                             ${st.photoUrl ? `<img src="${st.photoUrl}" class="w-7 h-7 rounded-lg object-cover border border-slate-200">` : `<div class="w-7 h-7 rounded-lg bg-slate-100 text-slate-500 flex items-center justify-center font-bold text-[10px]"><i class="fa-solid fa-user"></i></div>`}
                             <div>
@@ -876,7 +901,12 @@
                                 <p class="text-[9px] text-slate-400">Class: ${st.fineArtsClass}</p>
                             </div>
                         </div>
-                        <span class="text-[10px] font-bold text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full border border-amber-100">Due ₹${st.fee || 0}</span>
+                        <div class="flex items-center gap-2">
+                            <span class="text-[10px] font-bold text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full border border-amber-100">₹${st.fee || 0}</span>
+                            <button onclick="sendWhatsAppReminder('${st.name.replace(/'/g, "\\'")}', '${st.mobile}')" class="w-7 h-7 bg-emerald-50 hover:bg-emerald-100 text-emerald-600 rounded-xl flex items-center justify-center text-xs transition-all shadow-sm" title="Send WhatsApp Reminder">
+                                <i class="fa-brands fa-whatsapp"></i>
+                            </button>
+                        </div>
                     </div>
                 `).join('');
 
