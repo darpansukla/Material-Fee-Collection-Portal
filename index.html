@@ -180,7 +180,7 @@
         <!-- SCREEN 3: LOADING SPINNER -->
         <div id="screenLoader" class="hidden apple-card rounded-3xl p-8 flex flex-col items-center justify-center space-y-4 my-auto">
             <div class="animate-spin rounded-full h-10 w-10 border-2 border-rose-100 border-t-rose-600"></div>
-            <p class="text-slate-500 text-xs font-semibold tracking-wide animate-pulse">Submitting data to Sheet2...</p>
+            <p class="text-slate-500 text-xs font-semibold tracking-wide animate-pulse">Submitting data...</p>
         </div>
 
         <!-- SCREEN 4: SUCCESS CONFIRMATION -->
@@ -190,7 +190,7 @@
             </div>
             <div class="space-y-1">
                 <h2 class="text-sm font-black text-slate-900">Payment Recorded Successfully!</h2>
-                <p class="text-[11px] text-slate-400">Data has been successfully pushed to Sheet2.</p>
+                <p class="text-[11px] text-slate-400">Data has been successfully recorded.</p>
             </div>
             
             <button onclick="resetPortal()" class="w-full bg-rose-600 hover:bg-rose-700 text-white font-bold py-3.5 px-6 rounded-2xl text-xs transition-all shadow-md shadow-rose-600/20 active:scale-[0.98]">
@@ -204,7 +204,7 @@
                 <i class="fa-solid fa-shield-halved"></i>
             </div>
             <h2 class="text-sm font-black text-slate-900">Admin Authentication</h2>
-            <p class="text-[11px] text-slate-400">Enter Admin PIN (2026) to view fee collection reports.</p>
+            <p class="text-[11px] text-slate-400">Enter Admin PIN (1998) to view fee collection reports.</p>
             
             <div class="space-y-3">
                 <input type="password" id="adminPinInput" placeholder="Enter PIN" maxlength="4" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-center text-lg font-mono tracking-widest focus:outline-none focus:ring-2 focus:ring-rose-600">
@@ -220,56 +220,78 @@
             <div class="flex items-center justify-between border-b border-slate-100 pb-3">
                 <div>
                     <h2 class="text-xs font-black text-slate-900 uppercase tracking-tight">Admin Dashboard</h2>
-                    <p class="text-[10px] text-slate-400">Live Collection Summary from Sheet2</p>
+                    <p class="text-[10px] text-slate-400">Live Collection Summary & Reports</p>
                 </div>
                 <button onclick="showScreen('screenForm')" class="w-8 h-8 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center text-xs hover:bg-slate-200">
                     <i class="fa-solid fa-xmark"></i>
                 </button>
             </div>
 
-            <!-- Metrics Grid -->
-            <div class="grid grid-cols-2 gap-2">
-                <div class="bg-rose-50/60 border border-rose-100 p-3 rounded-2xl">
-                    <p class="text-[9px] font-bold text-rose-500 uppercase tracking-wider">Total Students Paid</p>
-                    <p id="adminTotalStudents" class="text-lg font-black text-slate-900 mt-0.5">0</p>
+            <!-- Tab Switcher inside Admin Dashboard -->
+            <div class="grid grid-cols-2 gap-1.5 bg-slate-100 p-1 rounded-2xl">
+                <button id="adminTabCollectionBtn" onclick="switchAdminTab('collection')" class="py-2 text-center text-[10px] font-bold rounded-xl bg-white text-rose-600 shadow-sm transition-all">
+                    Collection Reports
+                </button>
+                <button id="adminTabPendingBtn" onclick="switchAdminTab('pending')" class="py-2 text-center text-[10px] font-bold rounded-xl text-slate-600 transition-all">
+                    Pending Students
+                </button>
+            </div>
+
+            <!-- TAB 1 CONTENT: COLLECTION REPORTS -->
+            <div id="adminTabCollectionContent" class="space-y-3">
+                <!-- Total Students Paid & All Total Collection Stats -->
+                <div class="grid grid-cols-2 gap-2">
+                    <div class="bg-slate-900 text-white p-3 rounded-2xl shadow-sm flex items-center justify-between">
+                        <div>
+                            <p class="text-[9px] uppercase tracking-wider text-slate-400 font-bold">Students Paid</p>
+                            <p id="totalStudentsPaidCount" class="text-base font-black mt-0.5">0</p>
+                        </div>
+                        <div class="w-8 h-8 bg-white/10 rounded-xl flex items-center justify-center text-xs text-rose-400">
+                            <i class="fa-solid fa-user-check"></i>
+                        </div>
+                    </div>
+                    <div class="bg-rose-600 text-white p-3 rounded-2xl shadow-sm flex items-center justify-between">
+                        <div>
+                            <p class="text-[9px] uppercase tracking-wider text-rose-100 font-bold">Grand Total</p>
+                            <p id="grandTotalAll" class="text-base font-black mt-0.5">₹0</p>
+                        </div>
+                        <div class="w-8 h-8 bg-white/20 rounded-xl flex items-center justify-center text-xs">
+                            <i class="fa-solid fa-indian-rupee-sign"></i>
+                        </div>
+                    </div>
                 </div>
-                <div class="bg-emerald-50/60 border border-emerald-100 p-3 rounded-2xl">
-                    <p class="text-[9px] font-bold text-emerald-600 uppercase tracking-wider">Total Collected</p>
-                    <p id="adminTotalAmount" class="text-lg font-black text-slate-900 mt-0.5">₹0</p>
+
+                <div class="grid grid-cols-2 gap-2">
+                    <div class="bg-blue-50/80 border border-blue-100 p-2.5 rounded-2xl">
+                        <p class="text-[9px] font-bold text-blue-600 uppercase">Grand Total Cash</p>
+                        <p id="grandTotalCash" class="text-sm font-black text-slate-900 mt-0.5">₹0</p>
+                    </div>
+                    <div class="bg-purple-50/80 border border-purple-100 p-2.5 rounded-2xl">
+                        <p class="text-[9px] font-bold text-purple-600 uppercase">Grand Total UPI</p>
+                        <p id="grandTotalUpi" class="text-sm font-black text-slate-900 mt-0.5">₹0</p>
+                    </div>
+                </div>
+
+                <!-- Date-Wise Collection Container with Expandable Details -->
+                <div class="space-y-2">
+                    <div class="flex items-center justify-between">
+                        <span class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Date-Wise Collection Breakdown</span>
+                        <button onclick="fetchAdminData()" class="text-[10px] text-rose-600 font-bold hover:underline"><i class="fa-solid fa-rotate mr-1"></i> Refresh</button>
+                    </div>
+                    <div id="dateWiseContainer" class="max-h-44 overflow-y-auto custom-scrollbar space-y-2 pr-1">
+                        <div class="p-4 text-center text-xs text-slate-400">Loading date summaries...</div>
+                    </div>
                 </div>
             </div>
 
-            <!-- Mode Breakdown -->
-            <div class="grid grid-cols-2 gap-2">
-                <div class="bg-blue-50/60 border border-blue-100 p-3 rounded-2xl">
-                    <p class="text-[9px] font-bold text-blue-600 uppercase tracking-wider">Cash Collection</p>
-                    <p id="adminCashAmount" class="text-sm font-black text-slate-900 mt-0.5">₹0</p>
+            <!-- TAB 2 CONTENT: PENDING SCHOOL WISE STUDENTS -->
+            <div id="adminTabPendingContent" class="hidden space-y-3">
+                <div class="flex items-center justify-between">
+                    <span class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Pending Students (South Point & Puthichitra)</span>
+                    <span id="pendingCountBadge" class="text-[9px] bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full font-bold">0 Pending</span>
                 </div>
-                <div class="bg-purple-50/60 border border-purple-100 p-3 rounded-2xl">
-                    <p class="text-[9px] font-bold text-purple-600 uppercase tracking-wider">UPI Collection</p>
-                    <p id="adminUpiAmount" class="text-sm font-black text-slate-900 mt-0.5">₹0</p>
-                </div>
-            </div>
-
-            <!-- Detailed Students Table -->
-            <div class="space-y-1.5">
-                <div class="flex justify-between items-center">
-                    <span class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Transactions from Sheet2</span>
-                    <button onclick="fetchAdminData()" class="text-[10px] text-rose-600 font-bold hover:underline"><i class="fa-solid fa-rotate mr-1"></i> Refresh</button>
-                </div>
-                <div class="border border-slate-200 rounded-2xl overflow-hidden bg-white max-h-52 overflow-y-auto custom-scrollbar">
-                    <table class="w-full text-left text-[11px]">
-                        <thead class="bg-slate-50 border-b border-slate-200 sticky top-0">
-                            <tr>
-                                <th class="p-2.5 font-bold text-slate-600">Student / Timestamp</th>
-                                <th class="p-2.5 font-bold text-slate-600">Mode</th>
-                                <th class="p-2.5 font-bold text-slate-600 text-right">Amount</th>
-                            </tr>
-                        </thead>
-                        <tbody id="adminTransactionsTable" class="divide-y divide-slate-100">
-                            <tr><td colspan="3" class="p-4 text-center text-slate-400">Loading records...</td></tr>
-                        </tbody>
-                    </table>
+                <div id="pendingSchoolContainer" class="max-h-64 overflow-y-auto custom-scrollbar space-y-2 pr-1">
+                    <div class="p-4 text-center text-xs text-slate-400">Calculating pending students...</div>
                 </div>
             </div>
         </div>
@@ -289,6 +311,7 @@
 
         let studentsData = [];
         let selectedStudentIndex = "";
+        let allTransactionsCache = [];
 
         window.addEventListener('DOMContentLoaded', () => {
             let cachedData = localStorage.getItem('cachedCsvStudentsDrive');
@@ -340,6 +363,7 @@
             let headers = parseCSVLine(lines[0]);
             let nameIdx = headers.indexOf("Student Name");
             let classIdx = headers.indexOf("Appearing Fine Arts Class");
+            let schoolIdx = headers.indexOf("School Name") !== -1 ? headers.indexOf("School Name") : headers.indexOf("School");
             let photoIdx = headers.indexOf("Passport Photo URL");
             let feeIdx = headers.indexOf("Material Fee");
 
@@ -353,9 +377,13 @@
                     let name = cols[nameIdx] ? cols[nameIdx].trim() : "";
                     if (name) {
                         let rawPhoto = photoIdx !== -1 && cols[photoIdx] ? cols[photoIdx].trim() : "";
+                        let schoolName = schoolIdx !== -1 && cols[schoolIdx] ? cols[schoolIdx].trim() : "Other";
+                        if (!schoolName) schoolName = "Other";
+
                         result.push({
                             name: name,
                             fineArtsClass: classIdx !== -1 && cols[classIdx] ? cols[classIdx].trim() : "-",
+                            school: schoolName,
                             photoUrl: getDriveDirectLink(rawPhoto),
                             fee: feeIdx !== -1 && cols[feeIdx] ? cols[feeIdx].trim().replace(/[^0-9.]/g, '') : "0"
                         });
@@ -409,7 +437,7 @@
                     ${photoHtml}
                     <div class="overflow-hidden">
                         <p class="text-xs font-bold text-slate-800 truncate">${student.name}</p>
-                        <p class="text-[10px] text-slate-400 truncate">Class: ${student.fineArtsClass}</p>
+                        <p class="text-[10px] text-slate-400 truncate">Class: ${student.fineArtsClass} | ${student.school}</p>
                     </div>
                 `;
                 container.appendChild(div);
@@ -536,7 +564,7 @@
             try {
                 await fetch(APPS_SCRIPT_WEB_APP_URL + "?" + params.toString());
             } catch (err) {
-                console.error("Error writing to Sheet2:", err);
+                console.error("Error writing data:", err);
             }
 
             setTimeout(() => {
@@ -561,7 +589,7 @@
 
         function verifyAdminPin() {
             let pin = document.getElementById('adminPinInput').value;
-            if (pin === "2026") {
+            if (pin === "1998") {
                 showScreen('screenAdminDashboard');
                 fetchAdminData();
             } else {
@@ -571,8 +599,8 @@
         }
 
         async function fetchAdminData() {
-            let tableBody = document.getElementById('adminTransactionsTable');
-            tableBody.innerHTML = `<tr><td colspan="3" class="p-4 text-center text-slate-400">Loading records from Sheet2...</td></tr>`;
+            let container = document.getElementById('dateWiseContainer');
+            container.innerHTML = `<div class="p-4 text-center text-xs text-slate-400">Loading records...</div>`;
 
             try {
                 let response = await fetch(ADMIN_CSV_URL + "&cacheBust=" + new Date().getTime());
@@ -580,21 +608,19 @@
                 parseAdminCSV(csvText);
             } catch (err) {
                 console.error("Error fetching admin CSV:", err);
-                tableBody.innerHTML = `<tr><td colspan="3" class="p-4 text-center text-rose-500">Failed to load Sheet2 data. Check CORS or Publish settings.</td></tr>`;
+                container.innerHTML = `<div class="p-4 text-center text-xs text-rose-500">Failed to load data.</div>`;
             }
         }
 
         function parseAdminCSV(text) {
             let lines = text.split('\n');
             if (lines.length < 2) {
-                updateAdminMetrics([], 0, 0, 0);
+                allTransactionsCache = [];
+                updateAdminDashboardView();
                 return;
             }
 
             let transactions = [];
-            let totalAmount = 0;
-            let cashAmount = 0;
-            let upiAmount = 0;
 
             for (let i = 1; i < lines.length; i++) {
                 let currentLine = lines[i].trim();
@@ -608,57 +634,266 @@
                     let fee = parseFloat(feeStr) || 0;
                     let mode = cols[3] || "Cash";
 
-                    totalAmount += fee;
-                    if (mode.toUpperCase().includes("UPI")) {
-                        upiAmount += fee;
-                    } else {
-                        cashAmount += fee;
-                    }
+                    let formattedDate = formatDateToReadable(timestamp);
+                    let timeOnly = extractTimeOnly(timestamp);
 
-                    transactions.push({ timestamp, name, fee, mode });
-                } 
-                else if (cols.length === 1 && cols[0].length > 0) {
-                    let rowText = cols[0];
-                    transactions.push({ 
-                        timestamp: "Recent", 
-                        name: rowText, 
-                        fee: 0, 
-                        mode: "Cash" 
-                    });
+                    transactions.push({ timestamp, name, fee, mode, formattedDate, timeOnly });
                 }
             }
 
-            updateAdminMetrics(transactions, totalAmount, cashAmount, upiAmount);
+            allTransactionsCache = transactions;
+            updateAdminDashboardView();
         }
 
-        function updateAdminMetrics(transactions, totalAmount, cashAmount, upiAmount) {
-            document.getElementById('adminTotalStudents').innerText = transactions.length;
-            document.getElementById('adminTotalAmount').innerText = "₹" + totalAmount.toLocaleString();
-            document.getElementById('adminCashAmount').innerText = "₹" + cashAmount.toLocaleString();
-            document.getElementById('adminUpiAmount').innerText = "₹" + upiAmount.toLocaleString();
+        function formatDateToReadable(tsStr) {
+            try {
+                let datePart = tsStr.split(',')[0].trim();
+                let parts = datePart.split('/');
+                if (parts.length === 3) {
+                    let day = parseInt(parts[0], 10);
+                    let month = parseInt(parts[1], 10);
+                    let year = parts[2];
 
-            let tableBody = document.getElementById('adminTransactionsTable');
-            tableBody.innerHTML = "";
+                    let months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+                    let monthStr = months[month - 1] || "";
 
-            if (transactions.length === 0) {
-                tableBody.innerHTML = `<tr><td colspan="3" class="p-4 text-center text-slate-400">No payment records found in Sheet2.</td></tr>`;
+                    let suffix = "th";
+                    if (day === 1 || day === 21 || day === 31) suffix = "st";
+                    else if (day === 2 || day === 22) suffix = "nd";
+                    else if (day === 3 || day === 23) suffix = "rd";
+
+                    return `${day}${suffix} ${monthStr}, ${year}`;
+                }
+                return datePart;
+            } catch (e) {
+                return tsStr.split(',')[0].trim();
+            }
+        }
+
+        function extractTimeOnly(tsStr) {
+            try {
+                if (tsStr.includes(',')) {
+                    return tsStr.split(',')[1].trim();
+                }
+                return tsStr;
+            } catch (e) {
+                return "";
+            }
+        }
+
+        function switchAdminTab(tabName) {
+            let colBtn = document.getElementById('adminTabCollectionBtn');
+            let penBtn = document.getElementById('adminTabPendingBtn');
+            let colContent = document.getElementById('adminTabCollectionContent');
+            let penContent = document.getElementById('adminTabPendingContent');
+
+            if (tabName === 'collection') {
+                colBtn.className = "py-2 text-center text-[10px] font-bold rounded-xl bg-white text-rose-600 shadow-sm transition-all";
+                penBtn.className = "py-2 text-center text-[10px] font-bold rounded-xl text-slate-600 transition-all";
+                colContent.classList.remove('hidden');
+                penContent.classList.add('hidden');
+            } else {
+                penBtn.className = "py-2 text-center text-[10px] font-bold rounded-xl bg-white text-rose-600 shadow-sm transition-all";
+                colBtn.className = "py-2 text-center text-[10px] font-bold rounded-xl text-slate-600 transition-all";
+                penContent.classList.remove('hidden');
+                colContent.classList.add('hidden');
+                renderPendingSchoolWise();
+            }
+        }
+
+        function toggleDateDetails(dateId) {
+            let detailsEl = document.getElementById(`details-${dateId}`);
+            let chevronEl = document.getElementById(`chevron-${dateId}`);
+            if (detailsEl.classList.contains('hidden')) {
+                detailsEl.classList.remove('hidden');
+                chevronEl.style.transform = "rotate(180deg)";
+            } else {
+                detailsEl.classList.add('hidden');
+                chevronEl.style.transform = "rotate(0deg)";
+            }
+        }
+
+        function toggleSchoolDetails(schoolId) {
+            let detailsEl = document.getElementById(`school-details-${schoolId}`);
+            let chevronEl = document.getElementById(`school-chevron-${schoolId}`);
+            if (detailsEl.classList.contains('hidden')) {
+                detailsEl.classList.remove('hidden');
+                chevronEl.style.transform = "rotate(180deg)";
+            } else {
+                detailsEl.classList.add('hidden');
+                chevronEl.style.transform = "rotate(0deg)";
+            }
+        }
+
+        function updateAdminDashboardView() {
+            let grandCash = 0;
+            let grandUpi = 0;
+            let groupedByDate = {};
+
+            allTransactionsCache.forEach(tx => {
+                if (tx.mode.toUpperCase().includes('UPI')) {
+                    grandUpi += tx.fee;
+                } else {
+                    grandCash += tx.fee;
+                }
+
+                if (!groupedByDate[tx.formattedDate]) {
+                    groupedByDate[tx.formattedDate] = { cash: 0, upi: 0, total: 0, transactions: [] };
+                }
+
+                if (tx.mode.toUpperCase().includes('UPI')) {
+                    groupedByDate[tx.formattedDate].upi += tx.fee;
+                } else {
+                    groupedByDate[tx.formattedDate].cash += tx.fee;
+                }
+                groupedByDate[tx.formattedDate].total += tx.fee;
+                groupedByDate[tx.formattedDate].transactions.push(tx);
+            });
+
+            let grandTotal = grandCash + grandUpi;
+            
+            // Count unique student names or total paid transactions count
+            document.getElementById('totalStudentsPaidCount').innerText = allTransactionsCache.length;
+            document.getElementById('grandTotalAll').innerText = "₹" + grandTotal.toLocaleString();
+            document.getElementById('grandTotalCash').innerText = "₹" + grandCash.toLocaleString();
+            document.getElementById('grandTotalUpi').innerText = "₹" + grandUpi.toLocaleString();
+
+            let dateContainer = document.getElementById('dateWiseContainer');
+            dateContainer.innerHTML = "";
+
+            let dates = Object.keys(groupedByDate);
+
+            if (dates.length === 0) {
+                dateContainer.innerHTML = `<div class="p-4 text-center text-xs text-slate-400">No collection history found.</div>`;
                 return;
             }
 
-            transactions.reverse().forEach(tx => {
-                let tr = document.createElement('tr');
-                tr.className = "hover:bg-slate-50";
-                tr.innerHTML = `
-                    <td class="p-2.5">
-                        <p class="font-bold text-slate-800">${tx.name}</p>
-                        <p class="text-[9px] text-slate-400">${tx.timestamp}</p>
-                    </td>
-                    <td class="p-2.5">
-                        <span class="px-2 py-0.5 rounded-full text-[9px] font-bold ${tx.mode.toUpperCase().includes('UPI') ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700'}">${tx.mode}</span>
-                    </td>
-                    <td class="p-2.5 text-right font-bold text-rose-600">₹${tx.fee.toLocaleString()}</td>
+            dates.forEach((dateStr, index) => {
+                let data = groupedByDate[dateStr];
+                let cardId = `dateCard-${index}`;
+
+                let card = document.createElement('div');
+                card.className = "bg-white border border-slate-200/80 rounded-2xl overflow-hidden shadow-sm transition-all";
+                
+                let detailsListHtml = data.transactions.map(tx => `
+                    <div class="flex items-center justify-between py-2 border-b border-slate-100 last:border-none text-[11px]">
+                        <div>
+                            <p class="font-bold text-slate-800">${tx.name}</p>
+                            <p class="text-[9px] text-slate-400"><i class="fa-regular fa-clock mr-1"></i>${tx.timeOnly}</p>
+                        </div>
+                        <div class="text-right">
+                            <span class="px-2 py-0.5 rounded-full text-[9px] font-bold ${tx.mode.toUpperCase().includes('UPI') ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700'}">${tx.mode}</span>
+                            <p class="font-bold text-rose-600 mt-0.5">₹${tx.fee.toLocaleString()}</p>
+                        </div>
+                    </div>
+                `).join('');
+
+                card.innerHTML = `
+                    <div onclick="toggleDateDetails('${cardId}')" class="p-3 bg-slate-50/60 hover:bg-slate-50 cursor-pointer flex items-center justify-between transition-all">
+                        <div class="flex items-center space-x-2">
+                            <i class="fa-regular fa-calendar-days text-rose-600 text-xs"></i>
+                            <span class="text-xs font-black text-slate-800">${dateStr}</span>
+                            <span class="text-[9px] bg-rose-100 text-rose-700 px-2 py-0.5 rounded-full font-bold">${data.transactions.length} items</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="text-xs font-black text-rose-600">₹${data.total.toLocaleString()}</span>
+                            <i class="fa-solid fa-chevron-down text-[10px] text-slate-400 transition-transform duration-200" id="chevron-${cardId}"></i>
+                        </div>
+                    </div>
+                    <div id="details-${cardId}" class="hidden px-3.5 py-2 bg-white border-t border-slate-100 divide-y divide-slate-50">
+                        <div class="grid grid-cols-2 gap-2 py-2 border-b border-slate-100 bg-rose-50/30 p-2 rounded-xl text-center mb-1">
+                            <div>
+                                <p class="text-[8px] font-bold text-blue-600 uppercase">Cash Subtotal</p>
+                                <p class="text-xs font-black text-slate-800">₹${data.cash.toLocaleString()}</p>
+                            </div>
+                            <div>
+                                <p class="text-[8px] font-bold text-purple-600 uppercase">UPI Subtotal</p>
+                                <p class="text-xs font-black text-slate-800">₹${data.upi.toLocaleString()}</p>
+                            </div>
+                        </div>
+                        ${detailsListHtml}
+                    </div>
                 `;
-                tableBody.appendChild(tr);
+                dateContainer.appendChild(card);
+            });
+        }
+
+        function renderPendingSchoolWise() {
+            let container = document.getElementById('pendingSchoolContainer');
+            container.innerHTML = `<div class="p-4 text-center text-xs text-slate-400">Loading pending students...</div>`;
+
+            let paidNamesSet = new Set(allTransactionsCache.map(tx => tx.name.trim().toLowerCase()));
+
+            let targetSchools = [
+                "south point visual & performing arts school", 
+                "puthichitra school of fine arts",
+                "south point", 
+                "puthichitra"
+            ];
+
+            let pendingStudents = studentsData.filter(s => {
+                let isPaid = paidNamesSet.has(s.name.trim().toLowerCase());
+                if (isPaid) return false;
+
+                let schoolLower = (s.school || "").toLowerCase();
+                return targetSchools.some(target => schoolLower.includes(target));
+            });
+
+            document.getElementById('pendingCountBadge').innerText = `${pendingStudents.length} Pending`;
+
+            if (pendingStudents.length === 0) {
+                container.innerHTML = `<div class="p-6 text-center bg-white border border-slate-200/80 rounded-2xl"><i class="fa-solid fa-circle-check text-emerald-500 text-2xl mb-2"></i><p class="text-xs font-bold text-slate-800">All South Point & Puthichitra students have cleared dues!</p></div>`;
+                return;
+            }
+
+            let schoolsMap = {};
+            pendingStudents.forEach(s => {
+                let school = s.school || "Other";
+                let key = "South Point Visual & Performing Arts School";
+                if (school.toLowerCase().includes("puthichitra")) {
+                    key = "Puthichitra School of Fine Arts";
+                }
+                if (!schoolsMap[key]) schoolsMap[key] = [];
+                schoolsMap[key].push(s);
+            });
+
+            container.innerHTML = "";
+            let schoolKeys = Object.keys(schoolsMap).sort();
+
+            schoolKeys.forEach((schoolName, index) => {
+                let list = schoolsMap[schoolName];
+                let schoolId = `school-${index}`;
+
+                let card = document.createElement('div');
+                card.className = "bg-white border border-slate-200/80 rounded-2xl overflow-hidden shadow-sm transition-all";
+
+                let studentsListHtml = list.map(st => `
+                    <div class="flex items-center justify-between py-2 border-b border-slate-100 last:border-none text-[11px]">
+                        <div class="flex items-center gap-2.5">
+                            ${st.photoUrl ? `<img src="${st.photoUrl}" class="w-7 h-7 rounded-lg object-cover border border-slate-200">` : `<div class="w-7 h-7 rounded-lg bg-slate-100 text-slate-500 flex items-center justify-center font-bold text-[10px]"><i class="fa-solid fa-user"></i></div>`}
+                            <div>
+                                <p class="font-bold text-slate-800">${st.name}</p>
+                                <p class="text-[9px] text-slate-400">Class: ${st.fineArtsClass}</p>
+                            </div>
+                        </div>
+                        <span class="text-[10px] font-bold text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full border border-amber-100">Due ₹${st.fee || 0}</span>
+                    </div>
+                `).join('');
+
+                card.innerHTML = `
+                    <div onclick="toggleSchoolDetails('${schoolId}')" class="p-3 bg-slate-50/60 hover:bg-slate-50 cursor-pointer flex items-center justify-between transition-all">
+                        <div class="flex items-center space-x-2">
+                            <i class="fa-solid fa-school text-amber-600 text-xs"></i>
+                            <span class="text-xs font-black text-slate-800">${schoolName}</span>
+                            <span class="text-[9px] bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full font-bold">${list.length} pending</span>
+                        </div>
+                        <i class="fa-solid fa-chevron-down text-[10px] text-slate-400 transition-transform duration-200" id="school-chevron-${schoolId}"></i>
+                    </div>
+                    <div id="school-details-${schoolId}" class="hidden px-3.5 py-2 bg-white border-t border-slate-100 divide-y divide-slate-50">
+                        ${studentsListHtml}
+                    </div>
+                `;
+                container.appendChild(card);
             });
         }
 
