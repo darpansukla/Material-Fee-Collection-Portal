@@ -70,34 +70,91 @@
         <div id="screenForm" class="apple-card rounded-3xl p-5 sm:p-6 space-y-4 my-auto animate-fade-in">
             <div class="space-y-1 text-center mb-2">
                 <h2 class="text-sm font-black tracking-tight text-slate-900">Collect Material Fee</h2>
-                <p class="text-[11px] text-slate-400">Select student and payment configuration.</p>
+                <p class="text-[11px] text-slate-400">Select number of students and configuration.</p>
+            </div>
+
+            <!-- Number of Students Toggle Buttons (1, 2, 3) -->
+            <div class="space-y-1">
+                <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider">Number of Students <span class="text-rose-500">*</span></label>
+                <div class="grid grid-cols-3 gap-2">
+                    <button type="button" id="countBtn1" onclick="setStudentCount(1)" class="py-2.5 text-center text-xs font-bold bg-rose-600 text-white border border-rose-600 rounded-2xl transition-all shadow-sm">
+                        1 Student
+                    </button>
+                    <button type="button" id="countBtn2" onclick="setStudentCount(2)" class="py-2.5 text-center text-xs font-bold bg-slate-50 text-slate-700 border border-slate-200 rounded-2xl transition-all shadow-sm hover:bg-slate-100">
+                        2 Students
+                    </button>
+                    <button type="button" id="countBtn3" onclick="setStudentCount(3)" class="py-2.5 text-center text-xs font-bold bg-slate-50 text-slate-700 border border-slate-200 rounded-2xl transition-all shadow-sm hover:bg-slate-100">
+                        3 Students
+                    </button>
+                </div>
             </div>
 
             <form id="feeForm" onsubmit="handleProceed(event)" class="space-y-3.5">
                 
-                <!-- Custom Student Selector Dropdown with Photos -->
-                <div class="space-y-1 relative">
-                    <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider">Student Name <span class="text-rose-500">*</span></label>
-                    
-                    <div id="studentDropdownBtn" onclick="toggleStudentDropdown()" class="w-full px-4 py-3 bg-slate-50/80 border border-slate-200 rounded-2xl text-xs font-semibold text-slate-800 flex items-center justify-between cursor-pointer hover:border-rose-300 transition-all">
-                        <span id="selectedStudentLabel" class="text-slate-400">Loading students...</span>
-                        <i class="fa-solid fa-chevron-down text-[10px] text-slate-500 transition-transform duration-200" id="dropdownChevron"></i>
+                <!-- Dynamic Student Selector Containers -->
+                <div id="studentSelectorsContainer" class="space-y-3">
+                    <!-- Student 1 Selector (Always visible) -->
+                    <div class="space-y-1 relative" id="studentBox1">
+                        <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider">Student 1 Name <span class="text-rose-500">*</span></label>
+                        
+                        <div id="studentDropdownBtn1" onclick="toggleStudentDropdown(1)" class="w-full px-4 py-3 bg-slate-50/80 border border-slate-200 rounded-2xl text-xs font-semibold text-slate-800 flex items-center justify-between cursor-pointer hover:border-rose-300 transition-all">
+                            <span id="selectedStudentLabel1" class="text-slate-400">Loading students...</span>
+                            <i class="fa-solid fa-chevron-down text-[10px] text-slate-500 transition-transform duration-200" id="dropdownChevron1"></i>
+                        </div>
+
+                        <div id="studentDropdownList1" class="hidden absolute left-0 right-0 top-full mt-1.5 bg-white border border-slate-200 rounded-2xl shadow-xl z-50 overflow-hidden animate-fade-in">
+                            <div class="p-2 border-b border-slate-100 bg-slate-50/50">
+                                <input type="text" id="studentSearchInput1" oninput="filterStudents(1, this.value)" placeholder="Search student name..." class="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-rose-600">
+                            </div>
+                            <div id="studentOptionsContainer1" class="max-h-60 overflow-y-auto custom-scrollbar divide-y divide-slate-100">
+                                <!-- Populated dynamically -->
+                            </div>
+                        </div>
                     </div>
 
-                    <div id="studentDropdownList" class="hidden absolute left-0 right-0 top-full mt-1.5 bg-white border border-slate-200 rounded-2xl shadow-xl z-50 overflow-hidden animate-fade-in">
-                        <div class="p-2 border-b border-slate-100 bg-slate-50/50">
-                            <input type="text" id="studentSearchInput" oninput="filterStudents(this.value)" placeholder="Search student name..." class="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-rose-600">
+                    <!-- Student 2 Selector (Initially Hidden) -->
+                    <div class="space-y-1 relative hidden" id="studentBox2">
+                        <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider">Student 2 Name <span class="text-rose-500">*</span></label>
+                        
+                        <div id="studentDropdownBtn2" onclick="toggleStudentDropdown(2)" class="w-full px-4 py-3 bg-slate-50/80 border border-slate-200 rounded-2xl text-xs font-semibold text-slate-800 flex items-center justify-between cursor-pointer hover:border-rose-300 transition-all">
+                            <span id="selectedStudentLabel2" class="text-slate-400">Select Student Name</span>
+                            <i class="fa-solid fa-chevron-down text-[10px] text-slate-500 transition-transform duration-200" id="dropdownChevron2"></i>
                         </div>
-                        <div id="studentOptionsContainer" class="max-h-60 overflow-y-auto custom-scrollbar divide-y divide-slate-100">
-                            <!-- Populated dynamically -->
+
+                        <div id="studentDropdownList2" class="hidden absolute left-0 right-0 top-full mt-1.5 bg-white border border-slate-200 rounded-2xl shadow-xl z-50 overflow-hidden animate-fade-in">
+                            <div class="p-2 border-b border-slate-100 bg-slate-50/50">
+                                <input type="text" id="studentSearchInput2" oninput="filterStudents(2, this.value)" placeholder="Search student name..." class="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-rose-600">
+                            </div>
+                            <div id="studentOptionsContainer2" class="max-h-60 overflow-y-auto custom-scrollbar divide-y divide-slate-100">
+                                <!-- Populated dynamically -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Student 3 Selector (Initially Hidden) -->
+                    <div class="space-y-1 relative hidden" id="studentBox3">
+                        <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider">Student 3 Name <span class="text-rose-500">*</span></label>
+                        
+                        <div id="studentDropdownBtn3" onclick="toggleStudentDropdown(3)" class="w-full px-4 py-3 bg-slate-50/80 border border-slate-200 rounded-2xl text-xs font-semibold text-slate-800 flex items-center justify-between cursor-pointer hover:border-rose-300 transition-all">
+                            <span id="selectedStudentLabel3" class="text-slate-400">Select Student Name</span>
+                            <i class="fa-solid fa-chevron-down text-[10px] text-slate-500 transition-transform duration-200" id="dropdownChevron3"></i>
+                        </div>
+
+                        <div id="studentDropdownList3" class="hidden absolute left-0 right-0 top-full mt-1.5 bg-white border border-slate-200 rounded-2xl shadow-xl z-50 overflow-hidden animate-fade-in">
+                            <div class="p-2 border-b border-slate-100 bg-slate-50/50">
+                                <input type="text" id="studentSearchInput3" oninput="filterStudents(3, this.value)" placeholder="Search student name..." class="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-rose-600">
+                            </div>
+                            <div id="studentOptionsContainer3" class="max-h-60 overflow-y-auto custom-scrollbar divide-y divide-slate-100">
+                                <!-- Populated dynamically -->
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Material Fee Display Box -->
+                <!-- Combined Material Fee Display Box -->
                 <div id="feeDisplayBox" class="hidden space-y-1 bg-rose-50/30 border border-rose-100 p-3.5 rounded-2xl animate-fade-in">
                     <div class="flex items-center justify-between">
-                        <span class="text-[10px] font-bold text-rose-500 uppercase tracking-wider">Material Fee Amount:</span>
+                        <span class="text-[10px] font-bold text-rose-500 uppercase tracking-wider">Total Material Fee Amount:</span>
                         <span class="text-[10px] bg-emerald-100 text-emerald-800 font-bold px-2 py-0.5 rounded-full">Due</span>
                     </div>
                     <p id="feeAmountText" class="text-sm font-black text-slate-900 mt-0.5">₹0</p>
@@ -155,15 +212,10 @@
             </div>
             
             <div class="bg-slate-50 p-3.5 rounded-2xl border border-slate-200/60 text-left space-y-3 text-xs">
-                <div class="flex items-center gap-3 pb-2 border-b border-slate-200/60">
-                    <img id="confPhoto" src="" alt="Photo" class="w-10 h-10 rounded-xl object-cover border border-slate-200 bg-white shadow-sm">
-                    <div>
-                        <p class="text-[9px] font-bold text-slate-400 uppercase">Student</p>
-                        <p class="font-bold text-slate-800" id="confName">-</p>
-                    </div>
+                <div class="space-y-2 pb-2 border-b border-slate-200/60" id="confStudentsListContainer">
+                    <!-- Populated dynamically -->
                 </div>
-                <div class="flex justify-between"><span class="text-slate-400">Fine Arts Class:</span><span class="font-bold text-slate-800" id="confClass">-</span></div>
-                <div class="flex justify-between"><span class="text-slate-400">Material Fee:</span><span class="font-bold text-rose-600" id="confFee">-</span></div>
+                <div class="flex justify-between"><span class="text-slate-400">Total Material Fee:</span><span class="font-bold text-rose-600 text-sm" id="confTotalFee">-</span></div>
                 <div class="flex justify-between"><span class="text-slate-400">Payment Mode:</span><span class="font-bold text-slate-800" id="confMode">-</span></div>
             </div>
 
@@ -310,7 +362,8 @@
         const ADMIN_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRPkHc9ph04i3PFILd6jh1vA_nJ5adJJjYhkBHS-_JpPd6ZH1e0DXMLk1ma1wo1YzzXjiYf7pbDikfS/pub?gid=804557737&single=true&output=csv";
 
         let studentsData = [];
-        let selectedStudentIndex = "";
+        let selectedStudentIndices = { 1: "", 2: "", 3: "" };
+        let currentStudentCount = 1;
         let allTransactionsCache = [];
 
         window.addEventListener('DOMContentLoaded', () => {
@@ -318,7 +371,7 @@
             if (cachedData) {
                 try {
                     studentsData = JSON.parse(cachedData);
-                    populateStudentList(studentsData);
+                    populateAllStudentLists();
                 } catch (e) {
                     console.error("Cache parse error", e);
                 }
@@ -326,8 +379,10 @@
             fetchCsvData();
 
             document.addEventListener('click', (e) => {
-                if (!e.target.closest('#studentDropdownBtn') && !e.target.closest('#studentDropdownList')) {
-                    closeStudentDropdown();
+                for (let i = 1; i <= 3; i++) {
+                    if (!e.target.closest(`#studentDropdownBtn${i}`) && !e.target.closest(`#studentDropdownList${i}`)) {
+                        closeStudentDropdown(i);
+                    }
                 }
             });
         });
@@ -349,7 +404,7 @@
                 
                 if (studentsData.length > 0) {
                     localStorage.setItem('cachedCsvStudentsDrive', JSON.stringify(studentsData));
-                    populateStudentList(studentsData);
+                    populateAllStudentLists();
                 }
             } catch (err) {
                 console.error("Error fetching CSV:", err);
@@ -412,8 +467,40 @@
             return result;
         }
 
-        function populateStudentList(data, filter = "") {
-            // Filter strictly for the two institutions in the dropdown
+        function setStudentCount(count) {
+            currentStudentCount = count;
+            
+            // Update toggle buttons styling
+            for (let i = 1; i <= 3; i++) {
+                let btn = document.getElementById(`countBtn${i}`);
+                if (i === count) {
+                    btn.className = "py-2.5 text-center text-xs font-bold bg-rose-600 text-white border border-rose-600 rounded-2xl transition-all shadow-sm";
+                } else {
+                    btn.className = "py-2.5 text-center text-xs font-bold bg-slate-50 text-slate-700 border border-slate-200 rounded-2xl transition-all shadow-sm hover:bg-slate-100";
+                }
+            }
+
+            // Show/Hide student selector boxes
+            for (let i = 1; i <= 3; i++) {
+                let box = document.getElementById(`studentBox${i}`);
+                if (i <= count) {
+                    box.classList.remove('hidden');
+                } else {
+                    box.classList.add('hidden');
+                    selectedStudentIndices[i] = "";
+                }
+            }
+
+            calculateAndUpdateFee();
+        }
+
+        function populateAllStudentLists() {
+            for (let i = 1; i <= 3; i++) {
+                populateStudentList(i, studentsData);
+            }
+        }
+
+        function populateStudentList(boxNum, data, filter = "") {
             let allowedInstitutions = [
                 "south point visual & performing arts school",
                 "puthichitra school of fine arts & crafts, ghy"
@@ -426,7 +513,7 @@
 
             validStudents.sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'accent', numeric: true }));
 
-            let container = document.getElementById('studentOptionsContainer');
+            let container = document.getElementById(`studentOptionsContainer${boxNum}`);
             container.innerHTML = "";
 
             let filtered = validStudents.filter(s => s.name.toLowerCase().includes(filter.toLowerCase()));
@@ -441,7 +528,7 @@
                 
                 let div = document.createElement('div');
                 div.className = "flex items-center gap-3 p-2.5 hover:bg-rose-50/50 cursor-pointer transition-all";
-                div.onclick = () => selectStudent(originalIndex);
+                div.onclick = () => selectStudent(boxNum, originalIndex);
 
                 let photoHtml = student.photoUrl 
                     ? `<img src="${student.photoUrl}" alt="" class="w-9 h-9 rounded-xl object-cover border border-slate-200 bg-slate-100 flex-shrink-0">`
@@ -457,99 +544,149 @@
                 container.appendChild(div);
             });
 
-            if(document.getElementById('selectedStudentLabel').innerText === "Loading students...") {
-                document.getElementById('selectedStudentLabel').innerText = "Select Student Name";
+            if(document.getElementById(`selectedStudentLabel${boxNum}`).innerText === "Loading students...") {
+                document.getElementById(`selectedStudentLabel${boxNum}`).innerText = "Select Student Name";
             }
         }
 
-        function toggleStudentDropdown() {
-            let list = document.getElementById('studentDropdownList');
-            let chevron = document.getElementById('dropdownChevron');
+        function toggleStudentDropdown(boxNum) {
+            let list = document.getElementById(`studentDropdownList${boxNum}`);
+            let chevron = document.getElementById(`dropdownChevron${boxNum}`);
             if (list.classList.contains('hidden')) {
+                // Close other open dropdowns first
+                for (let i = 1; i <= 3; i++) {
+                    if (i !== boxNum) closeStudentDropdown(i);
+                }
                 list.classList.remove('hidden');
                 chevron.style.transform = "rotate(180deg)";
-                document.getElementById('studentSearchInput').focus();
+                document.getElementById(`studentSearchInput${boxNum}`).focus();
             } else {
-                closeStudentDropdown();
+                closeStudentDropdown(boxNum);
             }
         }
 
-        function closeStudentDropdown() {
-            document.getElementById('studentDropdownList').classList.add('hidden');
-            document.getElementById('dropdownChevron').style.transform = "rotate(0deg)";
+        function closeStudentDropdown(boxNum) {
+            document.getElementById(`studentDropdownList${boxNum}`).classList.add('hidden');
+            document.getElementById(`dropdownChevron${boxNum}`).style.transform = "rotate(0deg)";
         }
 
-        function filterStudents(query) {
-            populateStudentList(studentsData, query);
+        function filterStudents(boxNum, query) {
+            populateStudentList(boxNum, studentsData, query);
         }
 
-        function selectStudent(index) {
-            selectedStudentIndex = index;
+        function selectStudent(boxNum, index) {
+            selectedStudentIndices[boxNum] = index;
             let student = studentsData[index];
 
             let photoHtml = student.photoUrl 
                 ? `<img src="${student.photoUrl}" alt="" class="w-7 h-7 rounded-lg object-cover border border-slate-200 bg-slate-100 flex-shrink-0">`
                 : `<div class="w-7 h-7 rounded-lg bg-rose-100 text-rose-600 flex items-center justify-center font-bold text-xs flex-shrink-0"><i class="fa-solid fa-user"></i></div>`;
 
-            document.getElementById('selectedStudentLabel').innerHTML = `
+            document.getElementById(`selectedStudentLabel${boxNum}`).innerHTML = `
                 <div class="flex items-center gap-2.5">
                     ${photoHtml}
                     <span class="font-bold text-slate-800">${student.name} <span class="text-slate-400 font-normal">(${student.fineArtsClass})</span></span>
                 </div>
             `;
             
-            closeStudentDropdown();
+            closeStudentDropdown(boxNum);
+            calculateAndUpdateFee();
+        }
 
-            document.getElementById('feeAmountText').innerText = "₹" + (student.fee || "0");
-            document.getElementById('feeDisplayBox').classList.remove('hidden');
+        function calculateAndUpdateFee() {
+            let totalFee = 0;
+            let hasAnySelection = false;
 
-            updateUpiDetails();
+            for (let i = 1; i <= currentStudentCount; i++) {
+                let idx = selectedStudentIndices[i];
+                if (idx !== "") {
+                    hasAnySelection = true;
+                    let feeVal = parseFloat(studentsData[idx].fee) || 0;
+                    totalFee += feeVal;
+                }
+            }
+
+            if (hasAnySelection) {
+                document.getElementById('feeAmountText').innerText = "₹" + totalFee.toLocaleString();
+                document.getElementById('feeDisplayBox').classList.remove('hidden');
+                updateUpiDetails(totalFee);
+            } else {
+                document.getElementById('feeDisplayBox').classList.add('hidden');
+                document.getElementById('upiSection').classList.add('hidden');
+            }
         }
 
         function togglePaymentMode(mode) {
             let upiSection = document.getElementById('upiSection');
             if (mode === 'UPI') {
                 upiSection.classList.remove('hidden');
-                updateUpiDetails();
+                let totalFee = 0;
+                for (let i = 1; i <= currentStudentCount; i++) {
+                    let idx = selectedStudentIndices[i];
+                    if (idx !== "") totalFee += parseFloat(studentsData[idx].fee) || 0;
+                }
+                updateUpiDetails(totalFee);
             } else {
                 upiSection.classList.add('hidden');
             }
         }
 
-        function updateUpiDetails() {
-            if (selectedStudentIndex === "") return;
-            let student = studentsData[selectedStudentIndex];
-            
-            let remarks = `${student.name} - Material Fee`;
+        function updateUpiDetails(totalFee) {
+            let namesArr = [];
+            for (let i = 1; i <= currentStudentCount; i++) {
+                let idx = selectedStudentIndices[i];
+                if (idx !== "") namesArr.push(studentsData[idx].name);
+            }
+
+            let remarks = namesArr.join(", ") + " - Material Fee";
             document.getElementById('upiRemarksText').innerText = remarks;
 
-            let upiString = `upi://pay?pa=sdarpan128@oksbi&pn=MaterialFee&am=${student.fee || 0}&cu=INR&tn=${encodeURIComponent(remarks)}`;
+            let upiString = `upi://pay?pa=sdarpan128@oksbi&pn=MaterialFee&am=${totalFee}&cu=INR&tn=${encodeURIComponent(remarks)}`;
             document.getElementById('upiQrImg').src = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(upiString)}`;
         }
 
         function handleProceed(event) {
             event.preventDefault();
 
-            if (selectedStudentIndex === "") {
-                alert("Please select a student");
-                return;
+            let activeStudents = [];
+            for (let i = 1; i <= currentStudentCount; i++) {
+                let idx = selectedStudentIndices[i];
+                if (idx === "") {
+                    alert(`Please select student for Student ${i}`);
+                    return;
+                }
+                activeStudents.push(studentsData[idx]);
             }
 
-            let student = studentsData[selectedStudentIndex];
             let paymentMode = document.querySelector('input[name="paymentMode"]:checked').value;
+            let totalFee = activeStudents.reduce((sum, s) => sum + (parseFloat(s.fee) || 0), 0);
 
-            document.getElementById('confName').innerText = student.name;
-            document.getElementById('confClass').innerText = student.fineArtsClass;
-            document.getElementById('confFee').innerText = "₹" + student.fee;
+            let listContainer = document.getElementById('confStudentsListContainer');
+            listContainer.innerHTML = "";
+
+            activeStudents.forEach((student, index) => {
+                let row = document.createElement('div');
+                row.className = "flex items-center justify-between pb-2 border-b border-slate-200/60 last:border-none";
+                
+                let photoHtml = student.photoUrl 
+                    ? `<img src="${student.photoUrl}" alt="Photo" class="w-8 h-8 rounded-xl object-cover border border-slate-200 bg-white shadow-sm flex-shrink-0">`
+                    : `<div class="w-8 h-8 rounded-xl bg-rose-100 text-rose-600 flex items-center justify-center font-bold text-xs flex-shrink-0"><i class="fa-solid fa-user"></i></div>`;
+
+                row.innerHTML = `
+                    <div class="flex items-center gap-2.5">
+                        ${photoHtml}
+                        <div>
+                            <p class="text-[9px] font-bold text-slate-400 uppercase">Student ${index + 1}</p>
+                            <p class="font-bold text-slate-800">${student.name} <span class="text-slate-400 font-normal">(${student.fineArtsClass})</span></p>
+                        </div>
+                    </div>
+                    <span class="font-bold text-rose-600">₹${student.fee}</span>
+                `;
+                listContainer.appendChild(row);
+            });
+
+            document.getElementById('confTotalFee').innerText = "₹" + totalFee.toLocaleString();
             document.getElementById('confMode').innerText = paymentMode;
-            
-            let confPhoto = document.getElementById('confPhoto');
-            if(student.photoUrl) {
-                confPhoto.src = student.photoUrl;
-                confPhoto.classList.remove('hidden');
-            } else {
-                confPhoto.classList.add('hidden');
-            }
 
             showScreen('screenConfirm');
         }
@@ -559,18 +696,28 @@
         }
 
         async function submitFinalPayment() {
-            let student = studentsData[selectedStudentIndex];
             let paymentMode = document.querySelector('input[name="paymentMode"]:checked').value;
             let timestamp = new Date().toLocaleString('en-GB');
+
+            let activeStudents = [];
+            for (let i = 1; i <= currentStudentCount; i++) {
+                let idx = selectedStudentIndices[i];
+                if (idx !== "") activeStudents.push(studentsData[idx]);
+            }
+
+            let namesCombined = activeStudents.map(s => s.name).join(" & ");
+            let classesCombined = activeStudents.map(s => s.fineArtsClass).join(" / ");
+            let totalFee = activeStudents.reduce((sum, s) => sum + (parseFloat(s.fee) || 0), 0);
+            let remarks = activeStudents.map(s => s.name).join(", ") + " - Material Fee";
 
             let params = new URLSearchParams({
                 action: "recordPayment",
                 timestamp: timestamp,
-                studentName: student.name,
-                fineArtsClass: student.fineArtsClass,
-                fee: student.fee,
+                studentName: namesCombined,
+                fineArtsClass: classesCombined,
+                fee: totalFee,
                 paymentMode: paymentMode,
-                remarks: `${student.name} - Material Fee`
+                remarks: remarks
             });
 
             showScreen('screenLoader');
@@ -588,8 +735,11 @@
 
         function resetPortal() {
             document.getElementById('feeForm').reset();
-            selectedStudentIndex = "";
-            document.getElementById('selectedStudentLabel').innerHTML = '<span class="text-slate-400">Select Student Name</span>';
+            setStudentCount(1);
+            selectedStudentIndices = { 1: "", 2: "", 3: "" };
+            for (let i = 1; i <= 3; i++) {
+                document.getElementById(`selectedStudentLabel${i}`).innerHTML = '<span class="text-slate-400">Select Student Name</span>';
+            }
             document.getElementById('feeDisplayBox').classList.add('hidden');
             document.getElementById('upiSection').classList.add('hidden');
             showScreen('screenForm');
@@ -849,7 +999,12 @@
             let container = document.getElementById('pendingSchoolContainer');
             container.innerHTML = `<div class="p-4 text-center text-xs text-slate-400">Loading pending students...</div>`;
 
-            let paidNamesSet = new Set(allTransactionsCache.map(tx => tx.name.trim().toLowerCase()));
+            // Check against all student names present in any transaction (handling multiple names combined with "&" or ",")
+            let paidNamesSet = new Set();
+            allTransactionsCache.forEach(tx => {
+                let names = tx.name.split(/&|,/);
+                names.forEach(n => paidNamesSet.add(n.trim().toLowerCase()));
+            });
 
             let targetInstitutions = [
                 "south point visual & performing arts school",
