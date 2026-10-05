@@ -705,25 +705,26 @@
                 if (idx !== "") activeStudents.push(studentsData[idx]);
             }
 
-            let namesCombined = activeStudents.map(s => s.name).join(" & ");
-            let classesCombined = activeStudents.map(s => s.fineArtsClass).join(" / ");
-            let totalFee = activeStudents.reduce((sum, s) => sum + (parseFloat(s.fee) || 0), 0);
-            let remarks = activeStudents.map(s => s.name).join(", ") + " - Material Fee";
-
-            let params = new URLSearchParams({
-                action: "recordPayment",
-                timestamp: timestamp,
-                studentName: namesCombined,
-                fineArtsClass: classesCombined,
-                fee: totalFee,
-                paymentMode: paymentMode,
-                remarks: remarks
-            });
-
             showScreen('screenLoader');
 
             try {
-                await fetch(APPS_SCRIPT_WEB_APP_URL + "?" + params.toString());
+                // Sequentially submit one by one: Student 1, then Student 2, then Student 3
+                for (let student of activeStudents) {
+                    let remarks = `${student.name} - Material Fee`;
+
+                    let params = new URLSearchParams({
+                        action: "recordPayment",
+                        timestamp: timestamp,
+                        studentName: student.name,
+                        fineArtsClass: student.fineArtsClass,
+                        fee: student.fee,
+                        paymentMode: paymentMode,
+                        remarks: remarks
+                    });
+
+                    // Wait for each submission to complete sequentially
+                    await fetch(APPS_SCRIPT_WEB_APP_URL + "?" + params.toString());
+                }
             } catch (err) {
                 console.error("Error writing data:", err);
             }
@@ -999,7 +1000,6 @@
             let container = document.getElementById('pendingSchoolContainer');
             container.innerHTML = `<div class="p-4 text-center text-xs text-slate-400">Loading pending students...</div>`;
 
-            // Check against all student names present in any transaction (handling multiple names combined with "&" or ",")
             let paidNamesSet = new Set();
             allTransactionsCache.forEach(tx => {
                 let names = tx.name.split(/&|,/);
